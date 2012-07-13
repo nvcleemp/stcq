@@ -1,7 +1,7 @@
 /* PLUGIN file to use with plantri.c 
 
    To use this, compile plantri.c using 
-       cc -o plantri_fkt -O4 '-DPLUGIN="fkt.c"' plantri.c
+       cc -o plantri_fkt -O4 '-DPLUGIN="fkt.c"' plantri.c -lm
 
    This plug-in uses the FKT algorithm to calculate the number
    of perfect matchings in the dual of each generated planar graph.
