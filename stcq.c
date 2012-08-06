@@ -14,6 +14,7 @@
 
 int matched[MAXF];
 int match[MAXF];
+EDGE *matchingEdges[MAXF];
 
 static int make_dual(void);
 
@@ -116,6 +117,10 @@ void matchNextFace(int lastFace, int matchingSize){
             match[nextFace] = neighbour;
             match[neighbour] = nextFace;
             matched[neighbour] = TRUE;
+            
+            //store edge corresponding to the match for each face.
+            matchingEdges[nextFace] = e;
+            matchingEdges[neighbour] = e->invers;
 
             matchNextFace(nextFace, matchingSize+1);
 
