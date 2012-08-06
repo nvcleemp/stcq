@@ -16,6 +16,15 @@ int matched[MAXF];
 int match[MAXF];
 EDGE *matchingEdges[MAXF];
 
+/*
+ * The following variable stores the direction in which the edges of the face
+ * should be iterated over when assigning the angles alpha, beta, gamma and
+ * delta. The assignment always starts with the edge stored in matchingEdges.
+ * 
+ * Possible directions are 0 and 1.
+ */
+int angleAssigmentDirection[MAXF];
+
 static int make_dual(void);
 
 void init_plugin(){
@@ -86,10 +95,34 @@ item* increment(item* head, int key){
 
 //////////////////////////////////////////////////////////////////////////////
 
+unsigned long long int assignmentCount = 0;
+
+void handleAngleAssignment(){
+    assignmentCount++;
+}
+
+void assignAnglesForCurrentPerfectMatchingRecursion(int currentFace){
+    if(currentFace==nv-2){
+        handleAngleAssignment();
+    } else {
+            angleAssigmentDirection[currentFace] = 0;
+            assignAnglesForCurrentPerfectMatchingRecursion(currentFace + 1);
+            angleAssigmentDirection[currentFace] = 1;
+            assignAnglesForCurrentPerfectMatchingRecursion(currentFace + 1);
+    }
+}    
+
+void assignAnglesForCurrentPerfectMatching(){
+    //we fix the direction of one face to prevent mirror images to both be generated.
+    angleAssigmentDirection[0] = 0;
+    assignAnglesForCurrentPerfectMatchingRecursion(1);
+}
+
 int matchingCount = 0;
 
 void handlePerfectMatching(){
     matchingCount++;
+    assignAnglesForCurrentPerfectMatching();
 }
 
 void matchNextFace(int lastFace, int matchingSize){
@@ -182,4 +215,5 @@ void perfect_matchings_summary() {
         fprintf(stderr, "%4d : %5d\n", currentItem->key, currentItem->value);
         currentItem = currentItem->next;
     }
+    fprintf(stderr, "\nAssignments: %llu\n", assignmentCount);
 }
