@@ -32,6 +32,8 @@ int deltaCount[MAXN];
  */
 int angleAssigmentDirection[MAXF];
 
+unsigned long long int unusedGraphCount = 0;
+
 static int make_dual(void);
 
 void init_plugin(){
@@ -351,6 +353,7 @@ static int generate_perfect_matchings_in_dual(int nbtot, int nbop, int doflip) {
     
     matchingCount = 0;
     
+    unsigned long long int oldSolutionCount = solvable;
     
     //we need the dual graph
     //nf stores the number of faces
@@ -389,6 +392,10 @@ static int generate_perfect_matchings_in_dual(int nbtot, int nbop, int doflip) {
     
     perfect_matchings_counts = increment(perfect_matchings_counts, matchingCount);
     
+    if(oldSolutionCount == solvable){
+        unusedGraphCount++;
+    }
+    
     return 0;
 }
 
@@ -403,4 +410,5 @@ void perfect_matchings_summary() {
     fprintf(stderr, "\nAssignments: %llu\n", assignmentCount);
     fprintf(stderr, "\nSolvable: %llu\n", solvable);
     fprintf(stderr, "\nNon-solvable: %llu\n", assignmentCount - solvable);
+    fprintf(stderr, "\n%llu quadrangulations don't correspond to a tiling.\n", unusedGraphCount);
 }
