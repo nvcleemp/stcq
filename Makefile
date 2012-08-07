@@ -7,3 +7,6 @@ plantri_fkt: plantri.c fkt.c
 	
 plantri_stcq: plantri.c stcq.c
 	cc -o plantri_stcq -O4 '-DPLUGIN="stcq.c"' plantri.c
+	
+plantri_stcq_debug: plantri.c stcq.c
+	cc -o plantri_stcq -O4 '-DPLUGIN="stcq.c"' -D_DEBUG plantri.c
