@@ -347,7 +347,7 @@ void matchNextFace(int lastFace, int matchingSize){
 }
 
 static int generate_perfect_matchings_in_dual(int nbtot, int nbop, int doflip) {
-    int i, j;
+    int i;
     
     matchingCount = 0;
     
