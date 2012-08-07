@@ -239,6 +239,10 @@ static int generate_perfect_matchings_in_dual(int nbtot, int nbop, int doflip) {
         match[0] = neighbour;
         match[neighbour] = 0;
         matched[neighbour] = TRUE;
+            
+        //store edge corresponding to the match for each face.
+        matchingEdges[0] = e;
+        matchingEdges[neighbour] = e->invers;
         
         matchNextFace(0, 1);
         
