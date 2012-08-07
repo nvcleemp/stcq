@@ -16,6 +16,11 @@ int matched[MAXF];
 int match[MAXF];
 EDGE *matchingEdges[MAXF];
 
+int alphaCount[MAXN];
+int betaCount[MAXN];
+int gammaCount[MAXN];
+int deltaCount[MAXN];
+
 /*
  * The following variable stores the direction in which the edges of the face
  * should be iterated over when assigning the angles alpha, beta, gamma and
@@ -97,8 +102,49 @@ item* increment(item* head, int key){
 
 unsigned long long int assignmentCount = 0;
 
+void createSystem(){
+    //clear systems
+    int i;
+    for(i=0; i<nv; i++){
+        alphaCount[i] = betaCount[i] = gammaCount[i] = deltaCount[i] = 0;
+    }
+    
+    //iterate over all faces
+    for(i=0; i<nv-2; i++){
+        EDGE *e1 = matchingEdges[i];
+        EDGE *e2 = e1->invers->prev;
+        EDGE *e3 = e2->invers->prev;
+        EDGE *e4 = e3->invers->prev;
+
+        //assert: e1 = e4->invers->prev;
+        if(angleAssigmentDirection[i]){
+            alphaCount[e1->end] += 1;
+            betaCount[e2->end] += 1;
+            gammaCount[e3->end] += 1;
+            deltaCount[e4->end] += 1;
+        } else {
+            alphaCount[e4->end] += 1;
+            betaCount[e3->end] += 1;
+            gammaCount[e2->end] += 1;
+            deltaCount[e1->end] += 1;
+        }
+    }
+}
+
+void printSystem(){
+    int i;
+    for(i=0; i<nv; i++){
+        fprintf(stderr, "(%d,%d,%d,%d)\n", alphaCount[i], betaCount[i], gammaCount[i], deltaCount[i]);
+    }
+    fprintf(stderr, "\n");
+}
+
 void handleAngleAssignment(){
     assignmentCount++;
+    createSystem();
+#ifdef _DEBUG
+    printSystem();
+#endif
 }
 
 void assignAnglesForCurrentPerfectMatchingRecursion(int currentFace){
