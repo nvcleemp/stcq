@@ -8,6 +8,8 @@
    equal and the length of the fourth side is different.   
 */
 
+#include "lp_lib.h"
+
 #define FILTER generate_perfect_matchings_in_dual
 #define PLUGIN_INIT init_plugin()
 #define SUMMARY perfect_matchings_summary
@@ -100,6 +102,138 @@ item* increment(item* head, int key){
 
 //////////////////////////////////////////////////////////////////////////////
 
+void handleSolution(){
+    
+}
+
+unsigned long long int solvable = 0;
+
+void solveSystem(){
+    lprec *lp;
+    int *colno = NULL, i, j;
+    REAL *row = NULL;
+    
+    lp = make_lp(0,4);
+    /* There are 4 angles.
+     */
+    if(lp == NULL){
+        exit(1);
+    }
+    resize_lp(lp, nv+9, get_Ncolumns(lp));
+    /* There nv + 1 equations: one for each vertex plus the extra equation
+     * 
+     *     alpha + beta + gamma + delta = 2 +4/F.
+     * 
+     */
+    
+    //name the columns
+    set_col_name(lp, 1, "alpha");
+    set_col_name(lp, 2, "beta");
+    set_col_name(lp, 3, "gamma");
+    set_col_name(lp, 4, "delta");
+    
+    colno = (int *) malloc(4 * sizeof(*colno));
+    row = (REAL *) malloc(4 * sizeof(*row));
+    if((colno == NULL) || (row == NULL)){
+        exit(1);
+    }
+    
+    colno[0] = 1;
+    row[0] = 1;
+    
+    if(!set_obj_fnex(lp, 1, row, colno)){
+        exit(1);
+    }
+    
+    set_add_rowmode(lp, TRUE); //start adding rows
+    
+    for(i=0; i<nv; i++){
+        j = 0;
+        
+        if(alphaCount[i]!=0){
+            colno[j] = 1;
+            row[j++] = alphaCount[i];
+        }
+        
+        if(betaCount[i]!=0){
+            colno[j] = 2;
+            row[j++] = betaCount[i];
+        }
+        
+        if(gammaCount[i]!=0){
+            colno[j] = 3;
+            row[j++] = gammaCount[i];
+        }
+        
+        if(deltaCount[i]!=0){
+            colno[j] = 4;
+            row[j++] = deltaCount[i];
+        }
+        
+        if(!add_constraintex(lp, j, row, colno, EQ, 2)){
+            exit(1);
+        }
+    }
+    
+    colno[0] = 1;
+    row[0] = 1;
+    colno[1] = 2;
+    row[1] = 1;
+    colno[2] = 3;
+    row[2] = 1;
+    colno[3] = 4;
+    row[3] = 1;
+    
+    if(!add_constraintex(lp, 4, row, colno, EQ, 2 + 4.0/(nv-2))){
+        exit(1);
+    }
+    
+    for(i=1; i<=4; i++){
+        colno[0] = i;
+        row[0] = 1;
+
+        if(!add_constraintex(lp, 1, row, colno, LE, 1.999999)){
+            exit(1);
+        }
+        if(!add_constraintex(lp, 1, row, colno, GE, 0.000001)){
+            exit(1);
+        }
+    }
+    
+    set_add_rowmode(lp, FALSE); //stop adding rows
+    
+    set_maxim(lp);
+    
+#ifdef _DEBUG
+    write_LP(lp, stderr);
+#endif
+    
+    set_verbose(lp, IMPORTANT);
+    
+    int result = solve(lp);
+    
+    if(result == OPTIMAL){
+        solvable++;
+        handleSolution();
+    }
+    
+#ifdef _DEBUG
+    fprintf(stderr, "Objective value: %f\n", get_objective(lp));
+
+    get_variables(lp, row);
+    for(j = 0; j < 4; j++){
+      fprintf(stderr, "%s: %f\n", get_col_name(lp, j + 1), row[j]);
+    }
+    
+    fprintf(stderr, "\n");
+#endif
+    
+    free(row);
+    free(colno);
+    
+    delete_lp(lp);
+}
+
 unsigned long long int assignmentCount = 0;
 
 void createSystem(){
@@ -142,6 +276,7 @@ void printSystem(){
 void handleAngleAssignment(){
     assignmentCount++;
     createSystem();
+    solveSystem();
 #ifdef _DEBUG
     printSystem();
 #endif
@@ -266,4 +401,6 @@ void perfect_matchings_summary() {
         currentItem = currentItem->next;
     }
     fprintf(stderr, "\nAssignments: %llu\n", assignmentCount);
+    fprintf(stderr, "\nSolvable: %llu\n", solvable);
+    fprintf(stderr, "\nNon-solvable: %llu\n", assignmentCount - solvable);
 }
