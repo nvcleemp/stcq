@@ -13,7 +13,9 @@
 #define FILTER generate_perfect_matchings_in_dual
 #define PLUGIN_INIT init_plugin()
 #define SUMMARY perfect_matchings_summary
+#define PLUGIN_SWITCHES else if(arg[j]=='n') unusedSwitch = TRUE;
 
+int unusedSwitch = FALSE;
 int matched[MAXF];
 int match[MAXF];
 EDGE *matchingEdges[MAXF];
@@ -394,6 +396,11 @@ static int generate_perfect_matchings_in_dual(int nbtot, int nbop, int doflip) {
     
     if(oldSolutionCount == solvable){
         unusedGraphCount++;
+        if(unusedSwitch){
+            return 1;
+        }
+    } else if(unusedSwitch){
+        return 0;
     }
     
     return 0;
