@@ -156,13 +156,11 @@ void solveSystem(){
     if(lp == NULL){
         exit(1);
     }
-    resize_lp(lp, nv+9, get_Ncolumns(lp));
+    resize_lp(lp, nv+1, get_Ncolumns(lp));
     /* There nv + 1 equations: one for each vertex plus the extra equation
      * 
      *     alpha + beta + gamma + delta = 2 +4/F.
      * 
-     * There are 8 inequalities since each of the four angles needs to lie
-     * between 0 and 2.
      */
     
     //name the columns
@@ -170,6 +168,14 @@ void solveSystem(){
     set_col_name(lp, 2, "beta");
     set_col_name(lp, 3, "gamma");
     set_col_name(lp, 4, "delta");
+    
+    REAL epsilon = 0.0000001;
+    REAL lowerBoundAngle = 0 + epsilon;
+    REAL upperBoundAngle = 2 - epsilon;
+    set_bounds(lp, 1, lowerBoundAngle, upperBoundAngle);
+    set_bounds(lp, 2, lowerBoundAngle, upperBoundAngle);
+    set_bounds(lp, 3, lowerBoundAngle, upperBoundAngle);
+    set_bounds(lp, 4, lowerBoundAngle, upperBoundAngle);
     
     colno = (int *) malloc(4 * sizeof(*colno));
     row = (REAL *) malloc(4 * sizeof(*row));
@@ -225,18 +231,6 @@ void solveSystem(){
     
     if(!add_constraintex(lp, 4, row, colno, EQ, 2 + 4.0/(nv-2))){
         exit(1);
-    }
-    
-    for(i=1; i<=4; i++){
-        colno[0] = i;
-        row[0] = 1;
-
-        if(!add_constraintex(lp, 1, row, colno, LE, 1.999999)){
-            exit(1);
-        }
-        if(!add_constraintex(lp, 1, row, colno, GE, 0.000001)){
-            exit(1);
-        }
     }
     
     set_add_rowmode(lp, FALSE); //stop adding rows
