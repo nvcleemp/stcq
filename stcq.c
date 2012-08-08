@@ -29,9 +29,13 @@
                             } else if(switchvalue==2){\
                                 writeHammingDistanceUnsolvedSystems = TRUE;\
                             }\
+                        } else if(arg[j]=='D'){\
+                            printDuplicateEquations = FALSE;\
                         }
 
 unsigned long long int rejectedByHammingDistance = 0;
+
+int printDuplicateEquations = TRUE;
 
 int unusedSwitch = FALSE; // if set to TRUE: unused graphs will be written to stdout
 
@@ -143,7 +147,9 @@ unsigned long long int solvable = 0;
 void printSystem(){
     int i;
     for(i=0; i<nv; i++){
-        fprintf(stderr, "(%d,%d,%d,%d)\n", alphaCount[i], betaCount[i], gammaCount[i], deltaCount[i]);
+        if(printDuplicateEquations || !isDuplicateEquation[i]){
+            fprintf(stderr, "(%d,%d,%d,%d)\n", alphaCount[i], betaCount[i], gammaCount[i], deltaCount[i]);
+        }
     }
     fprintf(stderr, "\n");
 }
@@ -359,6 +365,7 @@ void handleAngleAssignment(){
     } else {
         rejectedByHammingDistance++;
         if(printUnsolvableSystems || writeHammingDistanceUnsolvedSystems){
+            simplifySystem();
             printSystem();
         }
     }
