@@ -13,9 +13,19 @@
 #define FILTER generate_perfect_matchings_in_dual
 #define PLUGIN_INIT init_plugin()
 #define SUMMARY perfect_matchings_summary
-#define PLUGIN_SWITCHES else if(arg[j]=='n') unusedSwitch = TRUE;
+#define PLUGIN_SWITCHES else if(arg[j]=='n'){\
+                            unusedSwitch = TRUE;\
+                        } else if(arg[j]=='z'){\
+                            int switchvalue = getswitchvalue(arg,&j);\
+                            if(switchvalue==1){\
+                                printUnsolvableSystems = TRUE;\
+                            }\
+                        }
 
 int unusedSwitch = FALSE; // if set to TRUE: unused graphs will be written to stdout
+
+int printUnsolvableSystems = FALSE; //1
+
 int matched[MAXF];
 int match[MAXF];
 EDGE *matchingEdges[MAXF];
@@ -111,6 +121,14 @@ void handleSolution(){
 }
 
 unsigned long long int solvable = 0;
+
+void printSystem(){
+    int i;
+    for(i=0; i<nv; i++){
+        fprintf(stderr, "(%d,%d,%d,%d)\n", alphaCount[i], betaCount[i], gammaCount[i], deltaCount[i]);
+    }
+    fprintf(stderr, "\n");
+}
 
 void solveSystem(){
     lprec *lp;
@@ -221,6 +239,8 @@ void solveSystem(){
     if(result == OPTIMAL){
         solvable++;
         handleSolution();
+    } else if(printUnsolvableSystems){
+        printSystem();
     }
     
 #ifdef _DEBUG
@@ -269,14 +289,6 @@ void createSystem(){
             deltaCount[e1->end] += 1;
         }
     }
-}
-
-void printSystem(){
-    int i;
-    for(i=0; i<nv; i++){
-        fprintf(stderr, "(%d,%d,%d,%d)\n", alphaCount[i], betaCount[i], gammaCount[i], deltaCount[i]);
-    }
-    fprintf(stderr, "\n");
 }
 
 void handleAngleAssignment(){
