@@ -22,6 +22,13 @@
                             } else if(switchvalue==2){\
                                 printStatistics = TRUE;\
                             }\
+                        } else if(arg[j]=='w'){\
+                            int switchvalue = getswitchvalue(arg,&j);\
+                            if(switchvalue==1){\
+                                writeLpsolveUnsolvedSystems = TRUE;\
+                            } else if(switchvalue==2){\
+                                writeHammingDistanceUnsolvedSystems = TRUE;\
+                            }\
                         }
 
 unsigned long long int rejectedByHammingDistance = 0;
@@ -30,6 +37,9 @@ int unusedSwitch = FALSE; // if set to TRUE: unused graphs will be written to st
 
 int printUnsolvableSystems = FALSE; //1
 int printStatistics = FALSE; //2
+
+int writeLpsolveUnsolvedSystems = FALSE; //1
+int writeHammingDistanceUnsolvedSystems = FALSE; //2
 
 int matched[MAXF];
 int match[MAXF];
@@ -244,7 +254,7 @@ void solveSystem(){
     if(result == OPTIMAL){
         solvable++;
         handleSolution();
-    } else if(printUnsolvableSystems){
+    } else if(printUnsolvableSystems || writeLpsolveUnsolvedSystems){
         printSystem();
     }
     
@@ -320,7 +330,7 @@ void handleAngleAssignment(){
         solveSystem();
     } else {
         rejectedByHammingDistance++;
-        if(printUnsolvableSystems){
+        if(printUnsolvableSystems || writeHammingDistanceUnsolvedSystems){
             printSystem();
         }
     }
