@@ -50,6 +50,9 @@ int betaCount[MAXN];
 int gammaCount[MAXN];
 int deltaCount[MAXN];
 
+int isDuplicateEquation[MAXN];
+int duplicateEquationCount = 0;
+
 /*
  * The following variable stores the direction in which the edges of the face
  * should be iterated over when assigning the angles alpha, beta, gamma and
@@ -145,6 +148,32 @@ void printSystem(){
     fprintf(stderr, "\n");
 }
 
+void simplifySystem(){
+    int i, j;
+    /* remove duplicate equations */
+    
+    //reset array
+    for(i=0; i<nv; i++){
+        isDuplicateEquation[i] = FALSE;
+    }
+    duplicateEquationCount = 0;
+    
+    for(i=0; i<nv-1; i++){
+        if(isDuplicateEquation[i]) continue; //this equation is already a duplicate itself
+        for(j=i+1; j<nv; j++){
+            if(isDuplicateEquation[j]) continue; //this equation is already a duplicate
+            if(alphaCount[i]!=alphaCount[j]) continue;
+            if(betaCount[i]!=betaCount[j]) continue;
+            if(gammaCount[i]!=gammaCount[j]) continue;
+            if(deltaCount[i]!=deltaCount[j]) continue;
+            
+            // if we get here, then equation j is a duplicate of i
+            isDuplicateEquation[j] = TRUE;
+            duplicateEquationCount++;
+        }
+    }
+}
+
 void solveSystem(){
     lprec *lp;
     int *colno = NULL, i, j;
@@ -156,11 +185,13 @@ void solveSystem(){
     if(lp == NULL){
         exit(1);
     }
-    resize_lp(lp, nv+1, get_Ncolumns(lp));
+    resize_lp(lp, nv+1 - duplicateEquationCount, get_Ncolumns(lp));
     /* There nv + 1 equations: one for each vertex plus the extra equation
      * 
      *     alpha + beta + gamma + delta = 2 +4/F.
      * 
+     * Of course we only add each distinct equation once, so we subtract the
+     * number of duplicate equations.
      */
     
     //name the columns
@@ -193,30 +224,32 @@ void solveSystem(){
     set_add_rowmode(lp, TRUE); //start adding rows
     
     for(i=0; i<nv; i++){
-        j = 0;
-        
-        if(alphaCount[i]!=0){
-            colno[j] = 1;
-            row[j++] = alphaCount[i];
-        }
-        
-        if(betaCount[i]!=0){
-            colno[j] = 2;
-            row[j++] = betaCount[i];
-        }
-        
-        if(gammaCount[i]!=0){
-            colno[j] = 3;
-            row[j++] = gammaCount[i];
-        }
-        
-        if(deltaCount[i]!=0){
-            colno[j] = 4;
-            row[j++] = deltaCount[i];
-        }
-        
-        if(!add_constraintex(lp, j, row, colno, EQ, 2)){
-            exit(1);
+        if(!isDuplicateEquation[i]) {
+            j = 0;
+
+            if(alphaCount[i]!=0){
+                colno[j] = 1;
+                row[j++] = alphaCount[i];
+            }
+
+            if(betaCount[i]!=0){
+                colno[j] = 2;
+                row[j++] = betaCount[i];
+            }
+
+            if(gammaCount[i]!=0){
+                colno[j] = 3;
+                row[j++] = gammaCount[i];
+            }
+
+            if(deltaCount[i]!=0){
+                colno[j] = 4;
+                row[j++] = deltaCount[i];
+            }
+
+            if(!add_constraintex(lp, j, row, colno, EQ, 2)){
+                exit(1);
+            }
         }
     }
     
@@ -321,6 +354,7 @@ void handleAngleAssignment(){
     assignmentCount++;
     createSystem();
     if(firstCheckOfSystem()){
+        simplifySystem();
         solveSystem();
     } else {
         rejectedByHammingDistance++;
