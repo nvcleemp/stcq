@@ -15,7 +15,7 @@
 #define SUMMARY perfect_matchings_summary
 #define PLUGIN_SWITCHES else if(arg[j]=='n') unusedSwitch = TRUE;
 
-int unusedSwitch = FALSE;
+int unusedSwitch = FALSE; // if set to TRUE: unused graphs will be written to stdout
 int matched[MAXF];
 int match[MAXF];
 EDGE *matchingEdges[MAXF];
