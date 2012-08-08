@@ -291,10 +291,31 @@ void createSystem(){
     }
 }
 
+int firstCheckOfSystem(){
+    int i, j;
+    for(i=0; i<nv-1; i++){
+        for(j=i+1; j<nv; j++){
+            int hammingDistance = 0;
+            if(alphaCount[i]!=alphaCount[j]) hammingDistance++;
+            if(betaCount[i]!=betaCount[j]) hammingDistance++;
+            if(gammaCount[i]!=gammaCount[j]) hammingDistance++;
+            if(deltaCount[i]!=deltaCount[j]) hammingDistance++;
+            if(hammingDistance==1){
+                return FALSE;
+            }
+        }
+    }
+    return TRUE;
+}
+
 void handleAngleAssignment(){
     assignmentCount++;
     createSystem();
-    solveSystem();
+    if(firstCheckOfSystem()){
+        solveSystem();
+    } else if(printUnsolvableSystems){
+        printSystem();
+    }
 #ifdef _DEBUG
     printSystem();
 #endif
