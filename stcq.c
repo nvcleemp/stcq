@@ -155,29 +155,7 @@ void printSystem(){
 }
 
 void simplifySystem(){
-    int i, j;
-    /* remove duplicate equations */
-    
-    //reset array
-    for(i=0; i<nv; i++){
-        isDuplicateEquation[i] = FALSE;
-    }
-    duplicateEquationCount = 0;
-    
-    for(i=0; i<nv-1; i++){
-        if(isDuplicateEquation[i]) continue; //this equation is already a duplicate itself
-        for(j=i+1; j<nv; j++){
-            if(isDuplicateEquation[j]) continue; //this equation is already a duplicate
-            if(alphaCount[i]!=alphaCount[j]) continue;
-            if(betaCount[i]!=betaCount[j]) continue;
-            if(gammaCount[i]!=gammaCount[j]) continue;
-            if(deltaCount[i]!=deltaCount[j]) continue;
-            
-            // if we get here, then equation j is a duplicate of i
-            isDuplicateEquation[j] = TRUE;
-            duplicateEquationCount++;
-        }
-    }
+    //nothing to do at the moment
 }
 
 void solveSystem(){
@@ -341,8 +319,31 @@ void createSystem(){
 
 int firstCheckOfSystem(){
     int i, j;
+    /* If the system contains two equations that are at hamming distance 1,
+     * we return FALSE. At the same time we remove duplicate equations (i.e.
+     * equations that are at Hamming distance 0).
+     */
+
+    //reset array
+    for(i=0; i<nv; i++){
+        isDuplicateEquation[i] = FALSE;
+    }
+    duplicateEquationCount = 0;
+    
     for(i=0; i<nv-1; i++){
+        if(isDuplicateEquation[i]) continue;
+        /*
+         * this equation is already a duplicate itself, so any equation
+         * that would be at Hamming distance 1 of this equation is also
+         * at Hamming Distance of that earlier equation.
+         */
         for(j=i+1; j<nv; j++){
+            if(isDuplicateEquation[j]) continue;
+            /*
+            * this equation is already a duplicate, so any equation
+            * that would be at Hamming distance 1 of this equation is also
+            * at Hamming Distance of that earlier equation.
+            */
             int hammingDistance = 0;
             if(alphaCount[i]!=alphaCount[j]) hammingDistance++;
             if(betaCount[i]!=betaCount[j]) hammingDistance++;
@@ -350,6 +351,10 @@ int firstCheckOfSystem(){
             if(deltaCount[i]!=deltaCount[j]) hammingDistance++;
             if(hammingDistance==1){
                 return FALSE;
+            } else if(hammingDistance==0){
+                // if we get here, then equation j is a duplicate of i
+                isDuplicateEquation[j] = TRUE;
+                duplicateEquationCount++;
             }
         }
     }
