@@ -19,12 +19,17 @@
                             int switchvalue = getswitchvalue(arg,&j);\
                             if(switchvalue==1){\
                                 printUnsolvableSystems = TRUE;\
+                            } else if(switchvalue==2){\
+                                printStatistics = TRUE;\
                             }\
                         }
+
+unsigned long long int rejectedByHammingDistance = 0;
 
 int unusedSwitch = FALSE; // if set to TRUE: unused graphs will be written to stdout
 
 int printUnsolvableSystems = FALSE; //1
+int printStatistics = FALSE; //2
 
 int matched[MAXF];
 int match[MAXF];
@@ -313,8 +318,11 @@ void handleAngleAssignment(){
     createSystem();
     if(firstCheckOfSystem()){
         solveSystem();
-    } else if(printUnsolvableSystems){
-        printSystem();
+    } else {
+        rejectedByHammingDistance++;
+        if(printUnsolvableSystems){
+            printSystem();
+        }
     }
 #ifdef _DEBUG
     printSystem();
@@ -453,4 +461,8 @@ void perfect_matchings_summary() {
     fprintf(stderr, "\nSolvable: %llu\n", solvable);
     fprintf(stderr, "\nNon-solvable: %llu\n", assignmentCount - solvable);
     fprintf(stderr, "\n%llu quadrangulations don't correspond to a tiling.\n", unusedGraphCount);
+    if(printStatistics){
+        fprintf(stderr, "\nRejected by Hamming distance: %llu\n", rejectedByHammingDistance);
+        fprintf(stderr, "Rejected by lpsolve: %llu\n\n", assignmentCount - solvable - rejectedByHammingDistance);
+    }
 }
