@@ -128,6 +128,8 @@ void solveSystem(){
      * 
      *     alpha + beta + gamma + delta = 2 +4/F.
      * 
+     * There are 8 inequalities since each of the four angles needs to lie
+     * between 0 and 2.
      */
     
     //name the columns
