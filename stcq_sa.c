@@ -37,6 +37,8 @@ typedef struct e /* The data type used for edges */ {
 
     int left_facesize; /* size of the face in prev-direction of the edge.
         		  Only used for -p option. */
+    char angle; /* angle between this edge and next edge;
+                   0: alpha, 1: beta, 2: gamma, 3: delta */
 } EDGE;
 
 EDGE *firstedge[MAXN]; /* pointer to arbitrary edge out of vertex i. */
@@ -118,6 +120,23 @@ void printPlanarGraph(){
     }
 }
 
+void printAngleAssignment(){
+    int i;
+    for(i=0; i<nv; i++){
+        fprintf(stderr, "%d: ", i);
+        EDGE *e, *elast;
+    
+        e = elast = firstedge[i];
+        do {
+            fprintf(stderr, "%d ", e->end);
+            fprintf(stderr, "(%c) ", 'a' + e->angle);
+            e = e->next;
+        } while (e!=elast);
+        fprintf(stderr, "\n");
+    }
+    fprintf(stderr, "\n");
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -183,7 +202,7 @@ item* increment(item* head, int key) {
 //////////////////////////////////////////////////////////////////////////////
 
 void handleSolution() {
-
+    
 }
 
 unsigned long long int solvable = 0;
@@ -352,11 +371,19 @@ void createSystem() {
             betaCount[e2->end] += 1;
             gammaCount[e3->end] += 1;
             deltaCount[e4->end] += 1;
+            e2->angle = 0;
+            e3->angle = 1;
+            e4->angle = 2;
+            e1->angle = 3;
         } else {
             alphaCount[e4->end] += 1;
             betaCount[e3->end] += 1;
             gammaCount[e2->end] += 1;
             deltaCount[e1->end] += 1;
+            e1->angle = 0;
+            e4->angle = 1;
+            e3->angle = 2;
+            e2->angle = 3;
         }
     }
 }
