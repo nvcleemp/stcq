@@ -13,8 +13,10 @@
 #define FILTER generate_perfect_matchings_in_dual
 #define PLUGIN_INIT init_plugin()
 #define SUMMARY perfect_matchings_summary
-#define PLUGIN_SWITCHES else if(arg[j]=='n'){\
+#define PLUGIN_SWITCHES else if(arg[j]=='N'){\
                             unusedSwitch = TRUE;\
+                        } else if(arg[j]=='U'){\
+                            usedSwitch = TRUE;\
                         } else if(arg[j]=='z'){\
                             int switchvalue = getswitchvalue(arg,&j);\
                             if(switchvalue==1){\
@@ -33,11 +35,13 @@
                             printDuplicateEquations = FALSE;\
                         }
 
+unsigned long long int numberOfQuadrangulations = 0;
 unsigned long long int rejectedByHammingDistance = 0;
 
 int printDuplicateEquations = TRUE;
 
 int unusedSwitch = FALSE; // if set to TRUE: unused graphs will be written to stdout
+int usedSwitch = FALSE; // if set to TRUE: used graphs will be written to stdout
 
 int printUnsolvableSystems = FALSE; //1
 int printStatistics = FALSE; //2
@@ -65,6 +69,8 @@ int duplicateEquationCount = 0;
  * Possible directions are 0 and 1.
  */
 int angleAssigmentDirection[MAXF];
+
+char angleAroundVertex[MAXN][MAXN];
 
 unsigned long long int unusedGraphCount = 0;
 
@@ -258,7 +264,7 @@ void solveSystem(){
     write_LP(lp, stderr);
 #endif
     
-    set_verbose(lp, IMPORTANT);
+    set_verbose(lp, SEVERE);
     
     int result = solve(lp);
     
@@ -444,6 +450,8 @@ void matchNextFace(int lastFace, int matchingSize){
 }
 
 static int generate_perfect_matchings_in_dual(int nbtot, int nbop, int doflip) {
+    numberOfQuadrangulations++;
+    
     int i;
     
     matchingCount = 0;
@@ -494,19 +502,25 @@ static int generate_perfect_matchings_in_dual(int nbtot, int nbop, int doflip) {
         }
     } else if(unusedSwitch){
         return 0;
+    } else if(usedSwitch){
+        return 1;
     }
     
     return 0;
 }
 
 void perfect_matchings_summary() {  
+    unsigned long long int totalPerfectMatchingsCount = 0;
     item *currentItem = perfect_matchings_counts;
     fprintf(stderr, "Size   Count\n");
     fprintf(stderr, "------------\n");
     while(currentItem!=NULL){
         fprintf(stderr, "%4d : %5d\n", currentItem->key, currentItem->value);
+        totalPerfectMatchingsCount += (currentItem->value) * (currentItem->key);
         currentItem = currentItem->next;
     }
+    fprintf(stderr, "\nQuadrangulations: %llu\n", numberOfQuadrangulations);
+    fprintf(stderr, "\nMatchings: %llu\n", totalPerfectMatchingsCount);
     fprintf(stderr, "\nAssignments: %llu\n", assignmentCount);
     fprintf(stderr, "\nSolvable: %llu\n", solvable);
     fprintf(stderr, "\nNon-solvable: %llu\n", assignmentCount - solvable);
