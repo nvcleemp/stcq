@@ -202,7 +202,7 @@ item* increment(item* head, int key) {
 //////////////////////////////////////////////////////////////////////////////
 
 void handleSolution() {
-    
+
 }
 
 unsigned long long int solvable = 0;
@@ -515,8 +515,6 @@ void matchNextFace(int lastFace, int matchingSize) {
 }
 
 int generate_perfect_matchings_in_dual() {
-    numberOfQuadrangulations++;
-
     int i;
 
     matchingCount = 0;
@@ -802,7 +800,7 @@ int main(int argc, char *argv[]){
     int length;
     while (readPlanarCode(code, &length, stdin)) {
         decodePlanarCode(code);
-        printPlanarGraph();
+        numberOfQuadrangulations++;
         generate_perfect_matchings_in_dual();
     }
     perfect_matchings_summary();
