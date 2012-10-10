@@ -137,6 +137,19 @@ void printAngleAssignment(){
     fprintf(stderr, "\n");
 }
 
+void printFaceMatching(){
+    printPlanarGraph();
+    
+    int i;
+    for (i = 0; i < nv - 2; i++) {
+        EDGE *e = matchingEdges[i];
+        if(e->start < e->end){
+            fprintf(stderr, "%d - %d\n", e->start, e->end);
+        }
+    }
+    fprintf(stderr, "\n");
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 
