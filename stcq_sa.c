@@ -592,9 +592,68 @@ void assignAnglesForCurrentPerfectMatching() {
 
 int matchingCount = 0;
 
+int isCanonicalMatching() {
+    if(quadrangulationAutomorphismsCount==0) return 1;
+    
+    int currentMatching[nf/2][2];
+    int currentMatchingCount = 0;
+    
+    int i, j;
+    for (i = 0; i < nv - 2; i++) {
+        EDGE *e = matchingEdges[i];
+        if(e->start < e->end){
+            int pos = currentMatchingCount;
+            while(pos>0 && (currentMatching[pos-1][0]>e->start || (currentMatching[pos-1][0]==e->start && currentMatching[pos-1][1]==e->end))){
+                currentMatching[pos][0] = currentMatching[pos-1][0];
+                currentMatching[pos][1] = currentMatching[pos-1][1];
+                pos--;
+            }
+            currentMatching[pos][0] = e->start;
+            currentMatching[pos][1] = e->end;
+            currentMatchingCount++;
+        }
+    }
+    
+    int alternateMatching[nf/2][2];
+    
+    for(i=0; i<quadrangulationAutomorphismsCount; i++){
+        for(j=0; j<nf/2; j++){
+            int newStart = quadrangulationAutomorphisms[i][currentMatching[j][0]];
+            int newEnd = quadrangulationAutomorphisms[i][currentMatching[j][1]];
+            if(newEnd<newStart){
+                int t = newStart;
+                newStart = newEnd;
+                newEnd = t;
+            }
+            int pos = j;
+            while(pos>0 && (alternateMatching[pos-1][0]>newStart || (alternateMatching[pos-1][0]==newStart && alternateMatching[pos-1][1]==newEnd))){
+                alternateMatching[pos][0] = alternateMatching[pos-1][0];
+                alternateMatching[pos][1] = alternateMatching[pos-1][1];
+                pos--;
+            }
+            alternateMatching[pos][0] = newStart;
+            alternateMatching[pos][1] = newEnd;
+        }
+        //compare matchings
+        j = 0;
+        while(j < nf/2 && alternateMatching[j][0] == currentMatching[j][0] && alternateMatching[j][1] == currentMatching[j][1])
+            j++;
+        if(j == nf/2){
+            return 1;
+        } else if(alternateMatching[j][0] < currentMatching[j][0] || (alternateMatching[j][0] == currentMatching[j][0] && alternateMatching[j][1] < currentMatching[j][1])){
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+}
+
 void handlePerfectMatching() {
+    if(!isCanonicalMatching()) return;
     matchingCount++;
-    assignAnglesForCurrentPerfectMatching();
+    //assignAnglesForCurrentPerfectMatching();
+    printFaceMatching();
+    fprintf(stderr, "NEXT\n");
 }
 
 void matchNextFace(int lastFace, int matchingSize) {
@@ -924,7 +983,10 @@ int main(int argc, char *argv[]){
     while (readPlanarCode(code, &length, stdin)) {
         decodePlanarCode(code);
         numberOfQuadrangulations++;
+        if (numberOfQuadrangulations==2){
+            calculateAutomorphismGroupQuadrangulation();
             generate_perfect_matchings_in_dual();
+        }
     }
     perfect_matchings_summary();
 
