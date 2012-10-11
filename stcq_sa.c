@@ -620,7 +620,7 @@ int isCanonicalMatching() {
         EDGE *e = matchingEdges[i];
         if(e->start < e->end){
             int pos = currentMatchingCount;
-            while(pos>0 && (currentMatching[pos-1][0]>e->start || (currentMatching[pos-1][0]==e->start && currentMatching[pos-1][1]==e->end))){
+            while(pos>0 && (currentMatching[pos-1][0]>e->start || (currentMatching[pos-1][0]==e->start && currentMatching[pos-1][1]>e->end))){
                 currentMatching[pos][0] = currentMatching[pos-1][0];
                 currentMatching[pos][1] = currentMatching[pos-1][1];
                 pos--;
@@ -643,7 +643,7 @@ int isCanonicalMatching() {
                 newEnd = t;
             }
             int pos = j;
-            while(pos>0 && (alternateMatching[pos-1][0]>newStart || (alternateMatching[pos-1][0]==newStart && alternateMatching[pos-1][1]==newEnd))){
+            while(pos>0 && (alternateMatching[pos-1][0]>newStart || (alternateMatching[pos-1][0]==newStart && alternateMatching[pos-1][1]>newEnd))){
                 alternateMatching[pos][0] = alternateMatching[pos-1][0];
                 alternateMatching[pos][1] = alternateMatching[pos-1][1];
                 pos--;
