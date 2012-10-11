@@ -315,6 +315,12 @@ void calculateAutomorphismGroupQuadrangulation(){
                         memcpy(quadrangulationAutomorphisms[quadrangulationAutomorphismsCount], cagqAlternateLabelling, sizeof(int)*MAXN);
                         quadrangulationAutomorphismsCount++;
                     }
+                    constructAlternateCertificateOrientationReversing(e);
+                    if(memcmp(cagqCertificate, cagqAlternateCertificate, sizeof(int)*pos) == 0) {
+                        //store automorphism
+                        memcpy(quadrangulationAutomorphisms[quadrangulationAutomorphismsCount], cagqAlternateLabelling, sizeof(int)*MAXN);
+                        quadrangulationAutomorphismsCount++;
+                    }
                 }
                 e = e->next;
             } while (e!=elast);
