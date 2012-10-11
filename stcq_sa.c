@@ -103,6 +103,9 @@ char angleAroundVertex[MAXN][MAXN];
 
 unsigned long long int unusedGraphCount = 0;
 
+int quadrangulationAutomorphisms[4*MAXE][MAXN]; //there are at most 4e automorphisms
+int quadrangulationAutomorphismsCount;
+
 //////////////////////////////////////////////////////////////////////////////
 
 void printPlanarGraph(){
@@ -144,7 +147,7 @@ void printFaceMatching(){
     for (i = 0; i < nv - 2; i++) {
         EDGE *e = matchingEdges[i];
         if(e->start < e->end){
-            fprintf(stderr, "%d - %d\n", e->start, e->end);
+                fprintf(stderr, "%d - %d\n", e->start, e->end);
         }
     }
     fprintf(stderr, "\n");
@@ -214,8 +217,115 @@ item* increment(item* head, int key) {
 
 //////////////////////////////////////////////////////////////////////////////
 
-void handleSolution() {
+int cagqCertificate[MAXE+MAXN];
+int cagqAlternateCertificate[MAXE+MAXN];
+int cagqAlternateLabelling[MAXN];
+EDGE *alternateFirstedge[MAXN];
+int cagqQueue[MAXN];
 
+void constructAlternateCertificate(EDGE *eStart){
+    int i;
+    for(i=0; i<MAXN; i++){
+        cagqAlternateLabelling[i] = MAXN;
+    }
+    EDGE *e, *elast;
+    int head = 1;
+    int tail = 0;
+    int vertexCounter = 1;
+    int cagqAlternateCertificatePosition = 0;
+    cagqQueue[0] = eStart->start;
+    alternateFirstedge[eStart->start] = eStart;
+    cagqAlternateLabelling[eStart->start] = 0;
+    while(head>tail){
+        int currentVertex = cagqQueue[tail++];
+        e = elast = alternateFirstedge[currentVertex];
+        do {
+            if(cagqAlternateLabelling[e->end]==MAXN){
+                cagqQueue[head++] = e->end;
+                cagqAlternateLabelling[e->end] = vertexCounter++;
+                alternateFirstedge[e->end] = e->inverse;
+            }
+            cagqAlternateCertificate[cagqAlternateCertificatePosition++] = cagqAlternateLabelling[e->end];
+            e = e->next;
+        } while (e!=elast);
+        cagqAlternateCertificate[cagqAlternateCertificatePosition++] = MAXN;
+    }
+}
+
+void constructAlternateCertificateOrientationReversing(EDGE *eStart){
+    int i;
+    for(i=0; i<MAXN; i++){
+        cagqAlternateLabelling[i] = MAXN;
+    }
+    EDGE *e, *elast;
+    int head = 1;
+    int tail = 0;
+    int vertexCounter = 1;
+    int cagqAlternateCertificatePosition = 0;
+    cagqQueue[0] = eStart->start;
+    alternateFirstedge[eStart->start] = eStart;
+    cagqAlternateLabelling[eStart->start] = 0;
+    while(head>tail){
+        int currentVertex = cagqQueue[tail++];
+        e = elast = alternateFirstedge[currentVertex];
+        do {
+            if(cagqAlternateLabelling[e->end]==MAXN){
+                cagqQueue[head++] = e->end;
+                cagqAlternateLabelling[e->end] = vertexCounter++;
+                alternateFirstedge[e->end] = e->inverse;
+            }
+            cagqAlternateCertificate[cagqAlternateCertificatePosition++] = cagqAlternateLabelling[e->end];
+            e = e->prev;
+        } while (e!=elast);
+        cagqAlternateCertificate[cagqAlternateCertificatePosition++] = MAXN;
+    }
+}
+
+void calculateAutomorphismGroupQuadrangulation(){
+    quadrangulationAutomorphismsCount = 0;
+    
+    //construct certificate
+    int pos = 0;
+    int i, j;
+    
+    for(i=0; i<nv; i++){
+        EDGE *e, *elast;
+
+        e = elast = firstedge[i];
+        do {
+            cagqCertificate[pos++] = e->end;
+            e = e->next;
+        } while (e!=elast);
+        cagqCertificate[pos++] = MAXN;
+    }
+    
+    //construct alternate certificates
+    EDGE *ebase = firstedge[0];
+    
+    for(i=0; i<nv; i++){
+        if(degree[i]==degree[0]){
+            EDGE *e, *elast;
+
+            e = elast = firstedge[i];
+            do {
+                if(e!=ebase){
+                    constructAlternateCertificate(e);
+                    if(memcmp(cagqCertificate, cagqAlternateCertificate, sizeof(int)*pos) == 0) {
+                        //store automorphism
+                        memcpy(quadrangulationAutomorphisms[quadrangulationAutomorphismsCount], cagqAlternateLabelling, sizeof(int)*MAXN);
+                        quadrangulationAutomorphismsCount++;
+                    }
+                }
+                e = e->next;
+            } while (e!=elast);
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+void handleSolution() {
+//    printAngleAssignment();
 }
 
 unsigned long long int solvable = 0;
@@ -814,7 +924,7 @@ int main(int argc, char *argv[]){
     while (readPlanarCode(code, &length, stdin)) {
         decodePlanarCode(code);
         numberOfQuadrangulations++;
-        generate_perfect_matchings_in_dual();
+            generate_perfect_matchings_in_dual();
     }
     perfect_matchings_summary();
 
