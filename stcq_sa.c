@@ -644,14 +644,11 @@ int isCanonicalMatching() {
         j = 0;
         while(j < nf/2 && alternateMatching[j][0] == currentMatching[j][0] && alternateMatching[j][1] == currentMatching[j][1])
             j++;
-        if(j == nf/2){
-            return 1;
-        } else if(alternateMatching[j][0] < currentMatching[j][0] || (alternateMatching[j][0] == currentMatching[j][0] && alternateMatching[j][1] < currentMatching[j][1])){
+        if(j<nf/2 && (alternateMatching[j][0] < currentMatching[j][0] || (alternateMatching[j][0] == currentMatching[j][0] && alternateMatching[j][1] < currentMatching[j][1]))){
             return 0;
-        } else {
-            return 1;
         }
     }
+    return 1;
 }
 
 void handlePerfectMatching() {
