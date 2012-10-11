@@ -154,10 +154,24 @@ void printFaceMatching(){
 }
 
 void printQuadrangulationAutomorphismGroup(){    
-    int i, j;
+    int i, j, printed[MAXN], next;
+    fprintf(stderr, "automorphism count: %d\n", quadrangulationAutomorphismsCount);
     for (i = 0; i < quadrangulationAutomorphismsCount; i++) {
+        for(j=0; j < MAXN; j++){
+            printed[j] = 0;
+        }
         for(j=0; j < nv; j++){
-            fprintf(stderr, "%d ", quadrangulationAutomorphisms[i][j]);
+            if(!printed[j]){
+                fprintf(stderr, "(%d", j);
+                printed[j] = 1;
+                next = quadrangulationAutomorphisms[i][j];
+                while(!printed[next]){
+                    fprintf(stderr, " %d", next);
+                    printed[next] = 1;
+                    next = quadrangulationAutomorphisms[i][next];
+                }
+                fprintf(stderr, ") ");
+            }
         }
         fprintf(stderr, "\n");
     }
