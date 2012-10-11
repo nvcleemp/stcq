@@ -153,6 +153,17 @@ void printFaceMatching(){
     fprintf(stderr, "\n");
 }
 
+void printQuadrangulationAutomorphismGroup(){    
+    int i, j;
+    for (i = 0; i < quadrangulationAutomorphismsCount; i++) {
+        for(j=0; j < nv; j++){
+            fprintf(stderr, "%d ", quadrangulationAutomorphisms[i][j]);
+        }
+        fprintf(stderr, "\n");
+    }
+    fprintf(stderr, "\n");
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 
