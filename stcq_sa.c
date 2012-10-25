@@ -9,6 +9,8 @@
  *     cc -o stcq -O4 stcq_sa.c liblpsolve55.a
  */
 
+#include <stdio.h>
+
 #include "lp_lib.h"
 
 #ifndef MAXN
