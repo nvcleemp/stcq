@@ -482,7 +482,13 @@ void calculateAutomorphismGroupQuadrangulation(){
 //////////////////////////////////////////////////////////////////////////////
 
 void handleSolution(lprec *lp) {
-//    printAngleAssignment();
+    if(outputFormat == 'h'){
+        //human-readable output
+        printSphericalTilingByCongruentQuadrangles(lp);
+    } else if(outputFormat == 'c'){
+        //code
+        
+    }
 }
 
 unsigned long long int solvable = 0;
