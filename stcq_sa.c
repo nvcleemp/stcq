@@ -547,7 +547,7 @@ void solveSystem() {
     set_col_name(lp, 3, "gamma");
     set_col_name(lp, 4, "delta");
 
-    REAL epsilon = 0.0000001;
+    REAL epsilon = 0.000001;
     REAL lowerBoundAngle = 0 + epsilon;
     REAL upperBoundAngle = 2 - epsilon;
     if(onlyConvex){
