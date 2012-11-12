@@ -149,6 +149,18 @@ void printAngleAssignment(){
     fprintf(stderr, "\n");
 }
 
+void printSphericalTilingByCongruentQuadrangles(lprec *lp){
+    int rows = get_Nrows(lp);
+    int cols = get_Ncolumns(lp);
+    REAL pv[1 + rows + cols];
+    get_primal_solution(lp, pv);
+    int i;
+    for(i=0; i<cols; i++){
+        fprintf(stderr, "%c = %f\n", 'a' + i, pv[1 + rows + i]);
+    }
+    printAngleAssignment();
+}
+
 void printFaceMatching(){
     printPlanarGraph();
     
@@ -469,7 +481,7 @@ void calculateAutomorphismGroupQuadrangulation(){
 
 //////////////////////////////////////////////////////////////////////////////
 
-void handleSolution() {
+void handleSolution(lprec *lp) {
 //    printAngleAssignment();
 }
 
@@ -643,7 +655,7 @@ void solveSystem() {
 
     if (result == OPTIMAL) {
         solvable++;
-        handleSolution();
+        handleSolution(lp);
     } else if (printUnsolvableSystems || writeLpsolveUnsolvedSystems) {
         printSystem();
     }
