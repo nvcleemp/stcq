@@ -500,14 +500,28 @@ void solveSystem() {
     if (lp == NULL) {
         exit(1);
     }
-    resize_lp(lp, nv + 1 - duplicateEquationCount, get_Ncolumns(lp));
-    /* There nv + 1 equations: one for each vertex plus the extra equation
-     * 
-     *     alpha + beta + gamma + delta = 2 +4/F.
-     * 
-     * Of course we only add each distinct equation once, so we subtract the
-     * number of duplicate equations.
-     */
+    if(onlyConvex){
+        resize_lp(lp, nv + 3 - duplicateEquationCount, get_Ncolumns(lp));
+        /* There nv + 1 equations: one for each vertex plus the extra equation
+         * 
+         *     alpha + beta + gamma + delta = 2 +4/F.
+         * 
+         * Of course we only add each distinct equation once, so we subtract the
+         * number of duplicate equations.
+         * There are also 2 inequalities:
+         *     alpha - beta + delta < 1
+         *     alpha - gamma + delta < 1
+         */
+    } else {
+        resize_lp(lp, nv + 1 - duplicateEquationCount, get_Ncolumns(lp));
+        /* There nv + 1 equations: one for each vertex plus the extra equation
+         * 
+         *     alpha + beta + gamma + delta = 2 +4/F.
+         * 
+         * Of course we only add each distinct equation once, so we subtract the
+         * number of duplicate equations.
+         */
+    }
 
     //name the columns
     set_col_name(lp, 1, "alpha");
@@ -518,6 +532,9 @@ void solveSystem() {
     REAL epsilon = 0.0000001;
     REAL lowerBoundAngle = 0 + epsilon;
     REAL upperBoundAngle = 2 - epsilon;
+    if(onlyConvex){
+        upperBoundAngle = 1 - epsilon;
+    }
     set_bounds(lp, 1, lowerBoundAngle, upperBoundAngle);
     set_bounds(lp, 2, lowerBoundAngle, upperBoundAngle);
     set_bounds(lp, 3, lowerBoundAngle, upperBoundAngle);
@@ -579,6 +596,37 @@ void solveSystem() {
 
     if (!add_constraintex(lp, 4, row, colno, EQ, 2 + 4.0 / (nv - 2))) {
         exit(1);
+    }
+    
+    if(onlyConvex){
+
+        colno[0] = 1;
+        row[0] = 1;
+        colno[1] = 2;
+        row[1] = -1;
+        colno[2] = 3;
+        row[2] = 0;
+        colno[3] = 4;
+        row[3] = 1;
+        
+        //in case of onlyConvex: upperBoundAngle = 1 - epsilon
+        if (!add_constraintex(lp, 4, row, colno, LE, upperBoundAngle)) {
+            exit(1);
+        }
+
+        colno[0] = 1;
+        row[0] = 1;
+        colno[1] = 2;
+        row[1] = 0;
+        colno[2] = 3;
+        row[2] = -1;
+        colno[3] = 4;
+        row[3] = 1;
+        
+        //in case of onlyConvex: upperBoundAngle = 1 - epsilon
+        if (!add_constraintex(lp, 4, row, colno, LE, upperBoundAngle)) {
+            exit(1);
+        }
     }
 
     set_add_rowmode(lp, FALSE); //stop adding rows
