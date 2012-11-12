@@ -1120,7 +1120,7 @@ int main(int argc, char *argv[]){
                 help(name);
                 return EXIT_SUCCESS;
             case 'c':
-                onlyConvex = TRUE;
+                onlyConvex = FALSE;
                 break;
             case 's':
                 printStatistics = TRUE;
