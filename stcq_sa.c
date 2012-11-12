@@ -916,9 +916,9 @@ void perfect_matchings_summary() {
     fprintf(stderr, "\nMatchings: %llu\n", totalPerfectMatchingsCount);
     fprintf(stderr, "\nAssignments: %llu\n", assignmentCount);
     fprintf(stderr, "\nSolvable: %llu\n", solvable);
-    fprintf(stderr, "\nNon-solvable: %llu\n", assignmentCount - solvable);
-    fprintf(stderr, "\n%llu quadrangulations don't correspond to a tiling.\n", unusedGraphCount);
     if (printStatistics) {
+        fprintf(stderr, "\nNon-solvable: %llu\n", assignmentCount - solvable);
+        fprintf(stderr, "\n%llu quadrangulations don't correspond to a tiling.\n", unusedGraphCount);
         fprintf(stderr, "\nRejected by Hamming distance: %llu\n", rejectedByHammingDistance);
         fprintf(stderr, "Rejected by lpsolve: %llu\n\n", assignmentCount - solvable - rejectedByHammingDistance);
     }
