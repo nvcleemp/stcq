@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include <getopt.h>
 
 #include "lp_lib.h"
 
@@ -67,6 +68,12 @@ unsigned long long int numberOfQuadrangulations = 0;
 unsigned long long int rejectedByHammingDistance = 0;
 
 int printDuplicateEquations = TRUE;
+
+int onlyConvex = TRUE;
+
+char outputFormat = 'n'; //defaults to no output
+
+char generatedType = 't'; //defaults to spherical tilings
 
 int unusedSwitch = FALSE; // if set to TRUE: unused graphs will be written to stdout
 int usedSwitch = FALSE; // if set to TRUE: used graphs will be written to stdout
@@ -1056,7 +1063,106 @@ int readPlanarCode(unsigned short code[], int *length, FILE *file) {
 
 }
 
+//====================== USAGE =======================
+
+void help(char *name){
+    fprintf(stderr, "The program %s calculates spherical tilings by congruent qaudrangles\n", name);
+    fprintf(stderr, "that have any of the input graphs as underlying graph.\n\n", name);
+    fprintf(stderr, "Usage\n=====\n");
+    fprintf(stderr, " %s [options]\n\n", name);
+    fprintf(stderr, "Without any options, this program will generate spherical tilings by\n");
+    fprintf(stderr, "congruent convex without writing any output.\n\n");
+    fprintf(stderr, "\nThis program can handle graphs up to %d vertices. Recompile if you need larger\n", MAXN);
+    fprintf(stderr, "graphs.\n\n");
+    fprintf(stderr, "Valid options\n=============\n");
+    fprintf(stderr, "    -h, --help\n");
+    fprintf(stderr, "       Print this help and return.\n");
+    fprintf(stderr, "    -t, --type type\n");
+    fprintf(stderr, "       Specifies the generated where type is one of\n");
+    fprintf(stderr, "           e, edge    edge assignments\n");
+    fprintf(stderr, "           a, angle   angle assignments\n");
+    fprintf(stderr, "           t, tiling  spherical tilings (default)\n");
+    fprintf(stderr, "    -o, --output format\n");
+    fprintf(stderr, "       Specifies the export format where format is one of\n");
+    fprintf(stderr, "           c, code    code depends on the generated type\n");
+    fprintf(stderr, "           h, human   human-readable output\n");
+    fprintf(stderr, "           n, none    no output: only count (default)\n");
+    fprintf(stderr, "    -c, --concave\n");
+    fprintf(stderr, "       Also allow concave quadrangles (currently not supported)\n");
+    fprintf(stderr, "    -s, --statistics\n");
+    fprintf(stderr, "       Print extra statistics\n");
+}
+
+void usage(char *name){
+    fprintf(stderr, "Usage: %s [options] n\n", name);
+    fprintf(stderr, "       %s [options]\n", name);
+    fprintf(stderr, "For more information type: %s -h \n\n", name);
+}
+
 int main(int argc, char *argv[]){
+
+    /*=========== commandline parsing ===========*/
+
+    int c;
+    char *name = argv[0];
+    static struct option long_options[] = {
+        {"help", no_argument, NULL, 'h'},
+        {"concave", no_argument, NULL, 'c'},
+        {"statistics", no_argument, NULL, 's'},
+        {"type", required_argument, NULL, 't'},
+        {"output", required_argument, NULL, 'o'}
+    };
+    int option_index = 0;
+
+    while ((c = getopt_long(argc, argv, "hcst:o:", long_options, &option_index)) != -1) {
+        switch (c) {
+            case 'h':
+                help(name);
+                return EXIT_SUCCESS;
+            case 'c':
+                onlyConvex = TRUE;
+                break;
+            case 's':
+                printStatistics = TRUE;
+                break;
+            case 'o':
+                outputFormat = optarg[0];
+                switch (outputFormat) {
+                    case 'n': //no output (default)
+                    case 'c': //computer code
+                    case 'h': //human-readable
+                        break;
+                    default:
+                        fprintf(stderr, "Illegal output format %c.\n", c);
+                        usage(name);
+                        return 1;
+                }
+                break;
+            case 't':
+                generatedType = optarg[0];
+                switch (generatedType) {
+                    case 'e': //edge assignments
+                    case 'a': //angle assignments
+                    case 't': //spherical tilings
+                        break;
+                    default:
+                        fprintf(stderr, "Illegal generated type %c.\n", c);
+                        usage(name);
+                        return 1;
+                }
+                break;
+            case '?':
+                usage(name);
+                return EXIT_FAILURE;
+            default:
+                fprintf(stderr, "Illegal option %c.\n", c);
+                usage(name);
+                return EXIT_FAILURE;
+        }
+    }
+
+    /*=========== read quadrangulations ===========*/
+    
     unsigned short code[MAXCODELENGTH];
     int length;
     while (readPlanarCode(code, &length, stdin)) {
