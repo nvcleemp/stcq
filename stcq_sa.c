@@ -69,6 +69,8 @@ unsigned long long int rejectedByHammingDistance = 0;
 
 int printDuplicateEquations = TRUE;
 
+unsigned long long int filterOnly = 0;
+
 int onlyConvex = TRUE;
 
 char outputFormat = 'n'; //defaults to no output
@@ -913,6 +915,9 @@ void perfect_matchings_summary() {
         currentItem = currentItem->next;
     }
     fprintf(stderr, "\nQuadrangulations: %llu\n", numberOfQuadrangulations);
+    if(filterOnly){
+        fprintf(stderr, "Only quadrangulation %llu was used\n", filterOnly);
+    }
     fprintf(stderr, "\nMatchings: %llu\n", totalPerfectMatchingsCount);
     fprintf(stderr, "\nAssignments: %llu\n", assignmentCount);
     fprintf(stderr, "\nSolvable: %llu\n", solvable);
@@ -1157,6 +1162,8 @@ void help(char *name){
     fprintf(stderr, "       Also allow concave quadrangles (currently not supported)\n");
     fprintf(stderr, "    -s, --statistics\n");
     fprintf(stderr, "       Print extra statistics\n");
+    fprintf(stderr, "    -f, --filter number\n");
+    fprintf(stderr, "       Only perform the calculations for the graph with the given number.\n");
 }
 
 void usage(char *name){
@@ -1176,11 +1183,12 @@ int main(int argc, char *argv[]){
         {"concave", no_argument, NULL, 'c'},
         {"statistics", no_argument, NULL, 's'},
         {"type", required_argument, NULL, 't'},
-        {"output", required_argument, NULL, 'o'}
+        {"output", required_argument, NULL, 'o'},
+        {"filter", required_argument, NULL, 'f'}
     };
     int option_index = 0;
 
-    while ((c = getopt_long(argc, argv, "hcst:o:", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "hcst:o:f:", long_options, &option_index)) != -1) {
         switch (c) {
             case 'h':
                 help(name);
@@ -1217,6 +1225,9 @@ int main(int argc, char *argv[]){
                         return 1;
                 }
                 break;
+            case 'f':
+                filterOnly = atoi(optarg);
+                break;
             case '?':
                 usage(name);
                 return EXIT_FAILURE;
@@ -1234,7 +1245,9 @@ int main(int argc, char *argv[]){
     while (readPlanarCode(code, &length, stdin)) {
         decodePlanarCode(code);
         numberOfQuadrangulations++;
+        if(filterOnly==0 || numberOfQuadrangulations==filterOnly){
             generate_perfect_matchings_in_dual();
+        }
     }
     perfect_matchings_summary();
 
