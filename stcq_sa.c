@@ -7,6 +7,11 @@
  * Compile with:
  *     
  *     cc -o stcq -O4 stcq_sa.c liblpsolve55.a
+ * 
+ * On some systems it might be necessary to compile with:
+ *     
+ *     cc -o stcq -O4 stcq_sa.c liblpsolve55.a -lm -ldl
+ * 
  */
 
 #include <stdio.h>
