@@ -70,7 +70,7 @@ static int markvalue = 30000;
 
 
 unsigned long long int numberOfQuadrangulations = 0;
-unsigned long long int rejectedByHammingDistance = 0;
+unsigned long long int rejectedByCoefficientDiff = 0;
 
 int printDuplicateEquations = TRUE;
 
@@ -756,17 +756,24 @@ int firstCheckOfSystem() {
              * that would be at Hamming distance 1 of this equation is also
              * at Hamming Distance of that earlier equation.
              */
+            int diffAlpha = alphaCount[i] - alphaCount[j];
+            int diffBeta = betaCount[i] - betaCount[j];
+            int diffGamma = gammaCount[i] - gammaCount[j];
+            int diffDelta = deltaCount[i] - deltaCount[j];
+            
             int hammingDistance = 0;
-            if (alphaCount[i] != alphaCount[j]) hammingDistance++;
-            if (betaCount[i] != betaCount[j]) hammingDistance++;
-            if (gammaCount[i] != gammaCount[j]) hammingDistance++;
-            if (deltaCount[i] != deltaCount[j]) hammingDistance++;
-            if (hammingDistance == 1) {
-                return FALSE;
-            } else if (hammingDistance == 0) {
+            if (diffAlpha != 0) hammingDistance++;
+            if (diffBeta != 0) hammingDistance++;
+            if (diffGamma != 0) hammingDistance++;
+            if (diffDelta != 0) hammingDistance++;
+            if (hammingDistance == 0) {
                 // if we get here, then equation j is a duplicate of i
                 isDuplicateEquation[j] = TRUE;
                 duplicateEquationCount++;
+            } else {
+                if((diffAlpha<=0 && diffBeta<=0 && diffGamma<=0 && diffDelta<=0) || (diffAlpha>=0 && diffBeta>=0 && diffGamma>=0 && diffDelta>=0)){
+                    return FALSE;
+                }
             }
         }
     }
@@ -780,7 +787,7 @@ void handleAngleAssignment() {
         simplifySystem();
         solveSystem();
     } else {
-        rejectedByHammingDistance++;
+        rejectedByCoefficientDiff++;
         if (printUnsolvableSystems || writeHammingDistanceUnsolvedSystems) {
             simplifySystem();
             printSystem();
@@ -929,8 +936,8 @@ void perfect_matchings_summary() {
     if (printStatistics) {
         fprintf(stderr, "\nNon-solvable: %llu\n", assignmentCount - solvable);
         fprintf(stderr, "\n%llu quadrangulations don't correspond to a tiling.\n", unusedGraphCount);
-        fprintf(stderr, "\nRejected by Hamming distance: %llu\n", rejectedByHammingDistance);
-        fprintf(stderr, "Rejected by lpsolve: %llu\n\n", assignmentCount - solvable - rejectedByHammingDistance);
+        fprintf(stderr, "\nRejected by coefficient diff: %llu\n", rejectedByCoefficientDiff);
+        fprintf(stderr, "Rejected by lpsolve: %llu\n\n", assignmentCount - solvable - rejectedByCoefficientDiff);
     }
 }
 
