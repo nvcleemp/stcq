@@ -805,8 +805,8 @@ int firstCheckOfSystem() {
                 if((diffAlpha<=0 && diffBeta<=0 && diffGamma<=0 && diffDelta<=0) || (diffAlpha>=0 && diffBeta>=0 && diffGamma>=0 && diffDelta>=0)){
                     return FALSE;
                 }
-                if(diffAlpha==-diffBeta && diffGamma==0 && diffDelta==0){
-                    //alpha==beta
+                if(diffAlpha==-diffGamma && diffBeta==0 && diffDelta==0){
+                    //alpha==gamma
                     return FALSE;
                 }
                 if(diffAlpha==-diffDelta && diffGamma==0 && diffBeta==0){
