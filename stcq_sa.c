@@ -526,16 +526,18 @@ void solveSystem() {
         exit(1);
     }
     if(onlyConvex){
-        resize_lp(lp, nv + 3 - duplicateEquationCount, get_Ncolumns(lp));
+        resize_lp(lp, nv + 5 - duplicateEquationCount, get_Ncolumns(lp));
         /* There nv + 1 equations: one for each vertex plus the extra equation
          * 
          *     alpha + beta + gamma + delta = 2 +4/F.
          * 
          * Of course we only add each distinct equation once, so we subtract the
          * number of duplicate equations.
-         * There are also 2 inequalities:
+         * There are also 4 inequalities:
          *     alpha - beta + delta < 1
+         *     alpha + beta - delta < 1
          *     alpha - gamma + delta < 1
+         *    -alpha + gamma + delta < 1
          */
     } else {
         resize_lp(lp, nv + 1 - duplicateEquationCount, get_Ncolumns(lp));
@@ -639,12 +641,41 @@ void solveSystem() {
             exit(1);
         }
 
+
+        colno[0] = 1;
+        row[0] = 1;
+        colno[1] = 2;
+        row[1] = 1;
+        colno[2] = 3;
+        row[2] = 0;
+        colno[3] = 4;
+        row[3] = -1;
+        
+        //in case of onlyConvex: upperBoundAngle = 1 - epsilon
+        if (!add_constraintex(lp, 4, row, colno, LE, upperBoundAngle)) {
+            exit(1);
+        }
+
         colno[0] = 1;
         row[0] = 1;
         colno[1] = 2;
         row[1] = 0;
         colno[2] = 3;
         row[2] = -1;
+        colno[3] = 4;
+        row[3] = 1;
+        
+        //in case of onlyConvex: upperBoundAngle = 1 - epsilon
+        if (!add_constraintex(lp, 4, row, colno, LE, upperBoundAngle)) {
+            exit(1);
+        }
+
+        colno[0] = 1;
+        row[0] = -1;
+        colno[1] = 2;
+        row[1] = 0;
+        colno[2] = 3;
+        row[2] = 1;
         colno[3] = 4;
         row[3] = 1;
         
