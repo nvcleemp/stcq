@@ -72,7 +72,7 @@ static int markvalue = 30000;
 unsigned long long int numberOfQuadrangulations = 0;
 unsigned long long int rejectedByCoefficientDiff = 0;
 
-int printDuplicateEquations = TRUE;
+int printDuplicateEquations = FALSE;
 
 unsigned long long int filterOnly = 0;
 
