@@ -25,6 +25,9 @@
 #define FALSE 0
 #define TRUE 1
 
+char outputFormat = 'n'; //defaults to no output
+int outputGraphsWithStructure = TRUE; //defaults to TRUE
+
 typedef struct e /* The data type used for edges */ {
     int start; /* vertex where the edge starts */
     int end; /* vertex where the edge ends */
@@ -113,6 +116,103 @@ int tristarSearch(){
 
 
 //////////////////////////////////////////////////////////////////////////////
+
+/*
+ * fills the array code with the planar code.
+ * Length will contain the length of the code.
+ * The maximum number of vertices is limited
+ * to 255.
+*/
+void computePlanarCode(unsigned char code[], int *length) {
+    int i;
+    unsigned char *codeStart;
+
+    codeStart = code;
+    *code = (unsigned char) (nv);
+    code++;
+    for (i = 0; i < nv; i++) {
+        EDGE *e, *elast;
+    
+        e = elast = firstedge[i];
+        do {
+            *code = (unsigned char) (e->end + 1);
+            code++;
+            e = e->next;
+        } while (e!=elast);
+        
+        *code = 0;
+        code++;
+    }
+    *length = code - codeStart;
+    return;
+}
+
+/*
+ * fills the array code with the planar code.
+ * Length will contain the length of the code.
+ * The maximum number of vertices is limited
+ * to 65535.
+ */
+void computePlanarCodeShort(unsigned short code[], int *length) {
+    int i;
+    unsigned short *codeStart;
+
+    codeStart = code;
+    *code = (unsigned short) (nv);
+    code++;
+    for (i = 0; i < nv; i++) {
+        EDGE *e, *elast;
+    
+        e = elast = firstedge[i];
+        do {
+            *code = (unsigned short) (e->end + 1);
+            code++;
+            e = e->next;
+        } while (e!=elast);
+        
+        *code = 0;
+        code++;
+    }
+    *length = code - codeStart;
+    return;
+}
+
+/*
+ * exports the current graph as planarcode on stdout.
+ */
+void writePlanarGraph(int header) {
+    int length;
+    
+    //ONLY CORRECT FOR QUADRANGULATIONS
+    unsigned char code[nv + nf * 4 + 1];
+    unsigned short codeShort[nv + nf * 4 + 1];
+    
+    static int first = TRUE;
+
+    if (first && header) {
+        fprintf(stdout, ">>planar_code<<");
+        first = FALSE;
+    }
+
+    
+    if (nv + 1 <= 255) {
+        computePlanarCode(code, &length);
+        if (fwrite(code, sizeof (unsigned char), length, stdout) != length) {
+            fprintf(stderr, "fwrite() failed -- exiting!\n");
+            exit(-1);
+        }
+    } else if (nv + 1 <= 65535){
+        computePlanarCodeShort(codeShort, &length);
+        putc(0, stdout);
+        if (fwrite(codeShort, sizeof (unsigned short), length, stdout) != length) {
+            fprintf(stderr, "fwrite() failed -- exiting!\n");
+            exit(-1);
+        }
+    } else {
+        fprintf(stderr, "Graph too large for planarcode -- exiting!\n");
+        exit(-1);
+    }
+}
 
 void printPlanarGraph(){
     int i;
@@ -343,6 +443,13 @@ void help(char *name){
     fprintf(stderr, "Valid options\n=============\n");
     fprintf(stderr, " -h, --help\n");
     fprintf(stderr, " Print this help and return.\n");
+    fprintf(stderr, " -o, --output format\n");
+    fprintf(stderr, " Specifies the export format where format is one of\n");
+    fprintf(stderr, "     c, code    planar code\n");
+    fprintf(stderr, "     h, human   human-readable output\n");
+    fprintf(stderr, "     n, none    no output: only count (default)\n");
+    fprintf(stderr, " -X\n");
+    fprintf(stderr, " Output the graphs without the structure instead of those with the structure.\n");
     fprintf(stderr, " -c, --cube\n");
     fprintf(stderr, " Looks for a quadrangle for which all vertices have degree 3.\n");
     fprintf(stderr, " -t, --tristar\n");
@@ -361,6 +468,7 @@ int main(int argc, char *argv[]){
     char *name = argv[0];
     static struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
+        {"output", required_argument, NULL, 'o'},
         {"cube", no_argument, NULL, 'c'},
         {"tristar", no_argument, NULL, 't'}
     };
@@ -368,11 +476,27 @@ int main(int argc, char *argv[]){
     
     int (*searchFunction)() = NULL;
 
-    while ((c = getopt_long(argc, argv, "hct", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "ho:Xct", long_options, &option_index)) != -1) {
         switch (c) {
             case 'h':
                 help(name);
                 return EXIT_SUCCESS;
+            case 'o':
+                outputFormat = optarg[0];
+                switch (outputFormat) {
+                    case 'n': //no output (default)
+                    case 'c': //computer code
+                    case 'h': //human-readable
+                        break;
+                    default:
+                        fprintf(stderr, "Illegal output format %c.\n", c);
+                        usage(name);
+                        return 1;
+                }
+                break;
+            case 'X':
+                outputGraphsWithStructure = FALSE;
+                break;
             case 'c':
                 searchFunction = &cubeSearch;
                 break;
@@ -404,6 +528,19 @@ int main(int argc, char *argv[]){
         numberOfGraphs++;
         if(searchFunction()){
             numberOfGraphsWithSubstructure++;
+            if(outputGraphsWithStructure){
+                if(outputFormat=='c'){
+                    writePlanarGraph(TRUE);
+                } else if(outputFormat=='h'){
+                    printPlanarGraph();
+                }
+            }
+        } else if(!outputGraphsWithStructure){
+            if(outputFormat=='c'){
+                writePlanarGraph(TRUE);
+            } else if(outputFormat=='h'){
+                printPlanarGraph();
+            }
         }
     }
     
