@@ -71,7 +71,7 @@ int nf; //the number of faces of the current quadrangulation
 
 //////////////////////////////////////////////////////////////////////////////
 
-int cubeSearch(){
+int cubicQuadSearch(){
     int i;
     for(i=0; i<nf; i++){
         EDGE *e, *elast;
@@ -478,8 +478,8 @@ void help(char *name){
     fprintf(stderr, "     n, none    no output: only count (default)\n");
     fprintf(stderr, " -X\n");
     fprintf(stderr, " Output the graphs without the structure instead of those with the structure.\n");
-    fprintf(stderr, " -c, --cube\n");
-    fprintf(stderr, " Looks for a quadrangle for which all vertices have degree 3.\n");
+    fprintf(stderr, " -c, --cubicquad\n");
+    fprintf(stderr, " Looks for a cubic quadrangle, i.e., a quadrangle for which all vertices have degree 3.\n");
     fprintf(stderr, " -t, --tristar\n");
     fprintf(stderr, " Looks for a vertex of degree 3 for which all neighbours have degree 3.\n");
     fprintf(stderr, " -T, --tristarplusone\n");
@@ -529,7 +529,7 @@ int main(int argc, char *argv[]){
                 outputGraphsWithStructure = FALSE;
                 break;
             case 'c':
-                searchFunction = &cubeSearch;
+                searchFunction = &cubicQuadSearch;
                 break;
             case 't':
                 searchFunction = &tristarSearch;
