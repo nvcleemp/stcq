@@ -115,6 +115,34 @@ int tristarSearch(){
 }
 
 
+int tristarPlusOneSearch(){
+    int i;
+    for(i=0; i<nv; i++){
+        if(degree[i]==3){
+            EDGE *e, *elast;
+
+            int isTristar = TRUE;
+            int plusOne = FALSE;
+
+            e = elast = firstedge[i];
+            do {
+                if(degree[e->end]!=3){
+                    isTristar = FALSE;
+                } else {
+                    if(degree[e->inverse->next->end]==3 || degree[e->inverse->prev->end]==3){
+                        plusOne = TRUE;
+                    }
+                }
+                e = e->next;
+            } while (e!=elast);
+
+            if(isTristar && plusOne) return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -454,6 +482,9 @@ void help(char *name){
     fprintf(stderr, " Looks for a quadrangle for which all vertices have degree 3.\n");
     fprintf(stderr, " -t, --tristar\n");
     fprintf(stderr, " Looks for a vertex of degree 3 for which all neighbours have degree 3.\n");
+    fprintf(stderr, " -T, --tristarplusone\n");
+    fprintf(stderr, " Looks for a vertex of degree 3 for which all neighbours have degree 3\n");
+    fprintf(stderr, " and with at least one vertex of degree 3 at distance 2.\n");
 }
 
 void usage(char *name){
@@ -476,7 +507,7 @@ int main(int argc, char *argv[]){
     
     int (*searchFunction)() = NULL;
 
-    while ((c = getopt_long(argc, argv, "ho:Xct", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "ho:XctT", long_options, &option_index)) != -1) {
         switch (c) {
             case 'h':
                 help(name);
@@ -503,6 +534,9 @@ int main(int argc, char *argv[]){
             case 't':
                 searchFunction = &tristarSearch;
                 break;
+            case 'T':
+                searchFunction = &tristarPlusOneSearch;
+                break;
             case '?':
                 usage(name);
                 return EXIT_FAILURE;
@@ -518,7 +552,7 @@ int main(int argc, char *argv[]){
         usage(name);
         return EXIT_FAILURE;
     }
-
+    
 
 
     unsigned short code[MAXCODELENGTH];
