@@ -29,6 +29,8 @@ char outputFormat = 'n'; //defaults to no output
 int outputGraphsWithStructure = TRUE; //defaults to TRUE
 int constructFrequencyTable = FALSE; //defaults to FALSE
 
+int requestedDegree = -1;
+
 typedef struct e /* The data type used for edges */ {
     int start; /* vertex where the edge starts */
     int end; /* vertex where the edge ends */
@@ -203,6 +205,18 @@ int tristarPlusOneSearch(){
             } while (e!=elast);
 
             if(isTristar && plusOne) count++;
+        }
+    }
+    return count;
+}
+
+
+int degreeSearch(){
+    int i;
+    int count = 0;
+    for(i=0; i<nv; i++){
+        if(degree[i]==requestedDegree){
+            count++;
         }
     }
     return count;
@@ -571,13 +585,14 @@ int main(int argc, char *argv[]){
         {"frequencytable", no_argument, NULL, 'f'},
         {"cube", no_argument, NULL, 'c'},
         {"tristar", no_argument, NULL, 't'},
-        {"tristarplusone", no_argument, NULL, 'T'}
+        {"tristarplusone", no_argument, NULL, 'T'},
+        {"degree", required_argument, NULL, 'd'}
     };
     int option_index = 0;
     
     int (*searchFunction)() = NULL;
 
-    while ((c = getopt_long(argc, argv, "ho:fXctT", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "ho:fXctTd:", long_options, &option_index)) != -1) {
         switch (c) {
             case 'h':
                 help(name);
@@ -609,6 +624,10 @@ int main(int argc, char *argv[]){
                 break;
             case 'T':
                 searchFunction = &tristarPlusOneSearch;
+                break;
+            case 'd':
+                requestedDegree = atoi(optarg);
+                searchFunction = &degreeSearch;
                 break;
             case '?':
                 usage(name);
