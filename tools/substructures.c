@@ -571,7 +571,7 @@ int main(int argc, char *argv[]){
         {"frequencytable", no_argument, NULL, 'f'},
         {"cube", no_argument, NULL, 'c'},
         {"tristar", no_argument, NULL, 't'},
-        {"tristarplusone", no_argument, NULL, 't'}
+        {"tristarplusone", no_argument, NULL, 'T'}
     };
     int option_index = 0;
     
