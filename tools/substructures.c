@@ -27,6 +27,7 @@
 
 char outputFormat = 'n'; //defaults to no output
 int outputGraphsWithStructure = TRUE; //defaults to TRUE
+int constructFrequencyTable = FALSE; //defaults to FALSE
 
 typedef struct e /* The data type used for edges */ {
     int start; /* vertex where the edge starts */
@@ -69,10 +70,73 @@ unsigned long long int numberOfGraphsWithSubstructure = 0;
 int nv; //the number of vertices of the current quadrangulation
 int nf; //the number of faces of the current quadrangulation
 
+
+//////////////////////////////////////////////////////////////////////////////
+
+struct list_el {
+    int key;
+    int value;
+    struct list_el * next;
+    struct list_el * prev;
+};
+
+typedef struct list_el item;
+
+item *frequencyTable = NULL;
+
+item* increment(item* head, int key) {
+    //first check whether the list is empty
+    if (head == NULL) {
+        item *new = (item *) malloc(sizeof (item));
+        new->key = key;
+        new->value = 1;
+        new->next = NULL;
+        new->prev = NULL;
+        return new;
+    }
+
+    //find the position where the new value should be added
+    item *currentItem = head;
+    while (currentItem->key < key && currentItem->next != NULL) {
+        currentItem = currentItem->next;
+    }
+
+    if (currentItem->key == key) {
+        currentItem->value++;
+        return head;
+    } else if (currentItem->key < key) {
+        item *new = (item *) malloc(sizeof (item));
+        new->key = key;
+        new->value = 1;
+        new->next = NULL;
+        new->prev = currentItem;
+        currentItem->next = new;
+        return head;
+    } else if (currentItem == head) {
+        item *new = (item *) malloc(sizeof (item));
+        new->key = key;
+        new->value = 1;
+        new->next = head;
+        new->prev = NULL;
+        head->prev = new;
+        return new;
+    } else {
+        item *new = (item *) malloc(sizeof (item));
+        new->key = key;
+        new->value = 1;
+        new->next = currentItem;
+        new->prev = currentItem->prev;
+        currentItem->prev->next = new;
+        currentItem->prev = new;
+        return head;
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 int cubicQuadSearch(){
     int i;
+    int count = 0;
     for(i=0; i<nf; i++){
         EDGE *e, *elast;
         
@@ -86,14 +150,15 @@ int cubicQuadSearch(){
             e = e->inverse->prev;
         } while (e!=elast);
         
-        if(isCube) return TRUE;
+        if(isCube) count++;
     }
-    return FALSE;
+    return count;
 }
 
 
 int tristarSearch(){
     int i;
+    int count = 0;
     for(i=0; i<nv; i++){
         if(degree[i]==3){
             EDGE *e, *elast;
@@ -108,15 +173,16 @@ int tristarSearch(){
                 e = e->next;
             } while (e!=elast);
 
-            if(isTristar) return TRUE;
+            if(isTristar) count++;
         }
     }
-    return FALSE;
+    return count;
 }
 
 
 int tristarPlusOneSearch(){
     int i;
+    int count = 0;
     for(i=0; i<nv; i++){
         if(degree[i]==3){
             EDGE *e, *elast;
@@ -136,10 +202,10 @@ int tristarPlusOneSearch(){
                 e = e->next;
             } while (e!=elast);
 
-            if(isTristar && plusOne) return TRUE;
+            if(isTristar && plusOne) count++;
         }
     }
-    return FALSE;
+    return count;
 }
 
 
@@ -478,6 +544,8 @@ void help(char *name){
     fprintf(stderr, "     n, none    no output: only count (default)\n");
     fprintf(stderr, " -X\n");
     fprintf(stderr, " Output the graphs without the structure instead of those with the structure.\n");
+    fprintf(stderr, " -f, --frequencytable\n");
+    fprintf(stderr, " Constructs a frequency table to show how many graphs have multiple copies of the structure.\n");
     fprintf(stderr, " -c, --cubicquad\n");
     fprintf(stderr, " Looks for a cubic quadrangle, i.e., a quadrangle for which all vertices have degree 3.\n");
     fprintf(stderr, " -t, --tristar\n");
@@ -500,14 +568,16 @@ int main(int argc, char *argv[]){
     static struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
         {"output", required_argument, NULL, 'o'},
+        {"frequencytable", no_argument, NULL, 'f'},
         {"cube", no_argument, NULL, 'c'},
-        {"tristar", no_argument, NULL, 't'}
+        {"tristar", no_argument, NULL, 't'},
+        {"tristarplusone", no_argument, NULL, 't'}
     };
     int option_index = 0;
     
     int (*searchFunction)() = NULL;
 
-    while ((c = getopt_long(argc, argv, "ho:XctT", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "ho:fXctT", long_options, &option_index)) != -1) {
         switch (c) {
             case 'h':
                 help(name);
@@ -524,6 +594,9 @@ int main(int argc, char *argv[]){
                         usage(name);
                         return 1;
                 }
+                break;
+            case 'f':
+                constructFrequencyTable = TRUE;
                 break;
             case 'X':
                 outputGraphsWithStructure = FALSE;
@@ -560,7 +633,11 @@ int main(int argc, char *argv[]){
     while (readPlanarCode(code, &length, stdin)) {
         decodePlanarCode(code);
         numberOfGraphs++;
-        if(searchFunction()){
+        int count = searchFunction();
+        if(constructFrequencyTable){
+            frequencyTable = increment(frequencyTable, count);
+        }
+        if(count){
             numberOfGraphsWithSubstructure++;
             if(outputGraphsWithStructure){
                 if(outputFormat=='c'){
@@ -582,5 +659,13 @@ int main(int argc, char *argv[]){
     fprintf(stderr, "%llu quadrangulations have the requested substructure. (%3.4f%%)\n", numberOfGraphsWithSubstructure, (100.0*numberOfGraphsWithSubstructure)/numberOfGraphs);
     fprintf(stderr, "%llu quadrangulations do not have the requested substructure.  (%3.4f%%)\n", numberOfGraphs - numberOfGraphsWithSubstructure,  (100.0*(numberOfGraphs - numberOfGraphsWithSubstructure))/numberOfGraphs);
     
-
+    if(constructFrequencyTable){
+        item *currentItem = frequencyTable;
+        fprintf(stderr, "Graphs   Count\n");
+        fprintf(stderr, "--------------\n");
+        while (currentItem != NULL) {
+            fprintf(stderr, "%6d : %5d\n", currentItem->value, currentItem->key);
+            currentItem = currentItem->next;
+        }
+    }
 }
