@@ -965,7 +965,7 @@ int generate_perfect_matchings_in_dual() {
     return 0;
 }
 
-void perfect_matchings_summary() {
+void printSummary() {
     unsigned long long int totalPerfectMatchingsCount = 0;
     item *currentItem = perfect_matchings_counts;
     fprintf(stderr, "Size   Count\n");
@@ -1349,6 +1349,6 @@ int main(int argc, char *argv[]){
                 generate_perfect_matchings_in_dual();
         }
     }
-    perfect_matchings_summary();
+    printSummary();
 
 }
