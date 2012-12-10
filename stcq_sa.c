@@ -85,6 +85,8 @@ char generatedType = 't'; //defaults to spherical tilings
 int unusedSwitch = FALSE; // if set to TRUE: unused graphs will be written to stdout
 int usedSwitch = FALSE; // if set to TRUE: used graphs will be written to stdout
 
+int isEarlyFilteringEnabled = TRUE;
+
 int printUnsolvableSystems = FALSE; //1
 int printStatistics = FALSE; //2
 
@@ -988,6 +990,44 @@ void perfect_matchings_summary() {
     }
 }
 
+//////////////////////////////////////////////////////////////////////////////
+
+/*
+ * This method returns TRUE if the current quadrangulation contains a cubic
+ * quadrangle, i.e., a quadrangle with 4 cubic vertices, and FALSE otherwise.
+ */
+int cubicQuadSearch(){
+    int i;
+    for(i=0; i<nf; i++){
+        EDGE *e, *elast;
+        
+        int isCubicQuad = TRUE;
+        
+        e = elast = facestart[i];
+        do {
+            if(degree[e->start]!=3){
+                isCubicQuad = FALSE;
+            }
+            e = e->inverse->prev;
+        } while (e!=elast);
+        
+        if(isCubicQuad) return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Method that returns FALSE if can be decided that this quadrangulation does not
+ * admit a STCQ2. At the moment this is only the case when the quadrangulation
+ * contains a cubic quadrangle, i.e., a quadrangle with 4 cubic vertices.
+ */
+int earlyFilterQuadrangulations(){
+    if(nf>6 && cubicQuadSearch()){
+        return FALSE;
+    }
+    return TRUE;
+}
+
 EDGE *findEdge(int from, int to){
     EDGE *e, *elast;
     
@@ -1305,7 +1345,8 @@ int main(int argc, char *argv[]){
         decodePlanarCode(code);
         numberOfQuadrangulations++;
         if(filterOnly==0 || numberOfQuadrangulations==filterOnly){
-            generate_perfect_matchings_in_dual();
+            if(!isEarlyFilteringEnabled || earlyFilterQuadrangulations())
+                generate_perfect_matchings_in_dual();
         }
     }
     perfect_matchings_summary();
