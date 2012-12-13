@@ -48,6 +48,7 @@ typedef struct e /* The data type used for edges */ {
         		  Only used for -p option. */
     char angle; /* angle between this edge and next edge;
                    0: alpha, 1: beta, 2: gamma, 3: delta */
+    int allowedInFaceMatching;
 } EDGE;
 
 EDGE *firstedge[MAXN]; /* pointer to arbitrary edge out of vertex i. */
@@ -87,6 +88,7 @@ int unusedSwitch = FALSE; // if set to TRUE: unused graphs will be written to st
 int usedSwitch = FALSE; // if set to TRUE: used graphs will be written to stdout
 
 int isEarlyFilteringEnabled = TRUE;
+int generateAllMatchings = FALSE;
 
 int printUnsolvableSystems = FALSE; //1
 int printStatistics = FALSE; //2
@@ -893,7 +895,7 @@ void matchNextFace(int lastFace, int matchingSize) {
     e = elast = facestart[nextFace];
     do {
         int neighbour = e->inverse->rightface;
-        if (!matched[neighbour]) {
+        if (!matched[neighbour] && e->allowedInFaceMatching) {
             match[nextFace] = neighbour;
             match[neighbour] = nextFace;
             matched[neighbour] = TRUE;
@@ -912,6 +914,35 @@ void matchNextFace(int lastFace, int matchingSize) {
     matched[nextFace] = FALSE;
 }
 
+void markEdgesAtCubicTristar(){
+    int i;
+    for(i=0; i<nv; i++){
+        if(degree[i]==3){
+            EDGE *e, *elast;
+
+            int isTristar = TRUE;
+
+            e = elast = firstedge[i];
+            do {
+                if(degree[e->end]!=3){
+                    isTristar = FALSE;
+                }
+                e = e->next;
+            } while (e!=elast);
+
+            if(isTristar){
+                e = elast = firstedge[i];
+                do {
+                    e->allowedInFaceMatching = FALSE;
+                    e->inverse->prev->inverse->next->allowedInFaceMatching = FALSE;
+                    e->inverse->next->inverse->prev->allowedInFaceMatching = FALSE;
+                    e = e->next;
+                } while (e!=elast);
+            }
+        }
+    }
+}
+
 int generate_perfect_matchings_in_dual() {
     int i;
 
@@ -923,6 +954,12 @@ int generate_perfect_matchings_in_dual() {
         fprintf(stderr, "Something went horribly wrong. Maybe some wrong parameter?\nnf: %d, nv: %d\n", nf, nv);
         exit(1);
     }
+    
+    if(!generateAllMatchings){
+        if(nv>8){
+            markEdgesAtCubicTristar();
+        }
+    }
 
     for (i = 0; i < nv - 2; i++) {
         matched[i] = FALSE;
@@ -933,19 +970,20 @@ int generate_perfect_matchings_in_dual() {
 
     e = elast = facestart[0];
     do {
-        int neighbour = e->inverse->rightface;
-        match[0] = neighbour;
-        match[neighbour] = 0;
-        matched[neighbour] = TRUE;
+        if(e->allowedInFaceMatching){
+            int neighbour = e->inverse->rightface;
+            match[0] = neighbour;
+            match[neighbour] = 0;
+            matched[neighbour] = TRUE;
 
-        //store edge corresponding to the match for each face.
-        matchingEdges[0] = e;
-        matchingEdges[neighbour] = e->inverse;
+            //store edge corresponding to the match for each face.
+            matchingEdges[0] = e;
+            matchingEdges[neighbour] = e->inverse;
 
-        matchNextFace(0, 1);
+            matchNextFace(0, 1);
 
-        matched[neighbour] = FALSE;
-
+            matched[neighbour] = FALSE;
+        }
         e = e->inverse->prev;
     } while (e != elast);
 
@@ -1097,6 +1135,7 @@ void decodePlanarCode(unsigned short* code) {
         edges[edgeCounter].start = i;
         edges[edgeCounter].end = code[codePosition] - 1;
         edges[edgeCounter].next = edges + edgeCounter + 1;
+        edges[edgeCounter].allowedInFaceMatching = TRUE;
         if(code[codePosition] - 1 < i){
             inverse = findEdge(code[codePosition]-1, i);
             edges[edgeCounter].inverse = inverse;
@@ -1115,6 +1154,7 @@ void decodePlanarCode(unsigned short* code) {
             edges[edgeCounter].end = code[codePosition] - 1;
             edges[edgeCounter].prev = edges + edgeCounter - 1;
             edges[edgeCounter].next = edges + edgeCounter + 1;
+            edges[edgeCounter].allowedInFaceMatching = TRUE;
             if(code[codePosition] - 1 < i){
                 inverse = findEdge(code[codePosition]-1, i);
                 edges[edgeCounter].inverse = inverse;
