@@ -315,9 +315,95 @@ void writeAngleAssignment(){
     }
 }
 
+/*
+fills the array code with the planar code of the current quadrangulation.
+length will contain the length of the code. The maximum number of vertices is limited
+to 255.
+*/
+void computePlanarCode(unsigned char code[], int *length) {
+    int i;
+    unsigned char *codeStart;
+    EDGE *e, *elast;
+
+    codeStart = code;
+    *code = (unsigned char) (nv);
+    code++;
+    for (i = 0; i < nv; i++) {
+        e = elast = firstedge[i];
+        do {
+            *code = (unsigned char) (e->end + 1);
+            code++;
+            e = e->next;
+        } while (e!=elast);
+        *code = 0;
+        code++;
+    }
+    *length = code - codeStart;
+    return;
+}
+
+/*
+fills the array code with the angle assignment code of the current structure.
+length will contain the length of the code. The maximum number of vertices is limited
+to 65535.
+*/
+void computePlanarCodeShort(unsigned short code[], int *length) {
+    int i;
+    unsigned short *codeStart;
+    EDGE *e, *elast;
+
+    codeStart = code;
+    *code = (unsigned short) (nv);
+    code++;
+    for (i = 0; i < nv; i++) {
+        e = elast = firstedge[i];
+        do {
+            *code = (unsigned short) (e->end + 1);
+            code++;
+            e = e->next;
+        } while (e!=elast);
+        *code = 0;
+        code++;
+    }
+    *length = code - codeStart;
+    return;
+}
+
+void writePlanarCode(){
+    static int first = TRUE;
+    
+    if(first){
+        fprintf(stdout, ">>planar_code<<");
+        first = FALSE;
+    }
+    
+    int length;
+    unsigned char code[MAXE + MAXN + 1];
+    unsigned short codeShort[MAXE + MAXN + 1];
+    //each directed edge once, plus one zero per vertex, plus size of graphs
+
+    if (nv + 1 <= 255) {
+        computePlanarCode(code, &length);
+        if (fwrite(code, sizeof (unsigned char), length, stdout) != length) {
+            fprintf(stderr, "fwrite() failed -- exiting!\n");
+            exit(-1);
+        }
+    } else if (nv + 1 <= 65535){
+        computePlanarCodeShort(codeShort, &length);
+        putc(0, stdout);
+        if (fwrite(codeShort, sizeof (unsigned short), length, stdout) != length) {
+            fprintf(stderr, "fwrite() failed -- exiting!\n");
+            exit(-1);
+        }
+    } else {
+        fprintf(stderr, "Graph too large for angle assignment format -- exiting!\n");
+        exit(-1);
+    }
+}
+
 void outputQuadrangulation(){
     if(outputFormat == 'c'){
-        
+        writePlanarCode();
     } else if (outputFormat == 'h'){
         printPlanarGraph();
     }
