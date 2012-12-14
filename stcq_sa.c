@@ -84,8 +84,10 @@ char outputFormat = 'n'; //defaults to no output
 
 char generatedType = 't'; //defaults to spherical tilings
 
-int unusedSwitch = FALSE; // if set to TRUE: unused graphs will be written to stdout
-int usedSwitch = FALSE; // if set to TRUE: used graphs will be written to stdout
+int unusedQuadrangulations = FALSE; // if set to TRUE: unused quadrangulations will be written to stdout
+int usedQuadrangulations = FALSE; // if set to TRUE: used quadrangulations will be written to stdout
+
+int outputSolution = TRUE; //by default we output the solution
 
 int isEarlyFilteringEnabled = TRUE;
 int generateAllMatchings = FALSE;
@@ -317,6 +319,14 @@ void writeAngleAssignment(){
     }
 }
 
+void outputQuadrangulation(){
+    if(outputFormat == 'c'){
+        
+    } else if (outputFormat == 'h'){
+        printPlanarGraph();
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 struct list_el {
@@ -494,12 +504,14 @@ void calculateAutomorphismGroupQuadrangulation(){
 //////////////////////////////////////////////////////////////////////////////
 
 void handleSolution(lprec *lp) {
-    if(outputFormat == 'h'){
-        //human-readable output
-        printSphericalTilingByCongruentQuadrangles(lp);
-    } else if(outputFormat == 'c'){
-        //code
-        
+    if(outputSolution){
+        if(outputFormat == 'h'){
+            //human-readable output
+            printSphericalTilingByCongruentQuadrangles(lp);
+        } else if(outputFormat == 'c'){
+            //code
+
+        }
     }
 }
 
@@ -992,13 +1004,11 @@ int generate_perfect_matchings_in_dual() {
 
     if (oldSolutionCount == solvable) {
         unusedGraphCount++;
-        if (unusedSwitch) {
-            return 1;
+        if (unusedQuadrangulations) {
+            outputQuadrangulation();
         }
-    } else if (unusedSwitch) {
-        return 0;
-    } else if (usedSwitch) {
-        return 1;
+    } else if (usedQuadrangulations) {
+        outputQuadrangulation();
     }
 
     return 0;
@@ -1319,6 +1329,8 @@ int main(int argc, char *argv[]){
     int c;
     char *name = argv[0];
     static struct option long_options[] = {
+        {"usedquadrangulations", no_argument, &usedQuadrangulations, TRUE},
+        {"unusedquadrangulations", no_argument, &unusedQuadrangulations, TRUE},
         {"help", no_argument, NULL, 'h'},
         {"concave", no_argument, NULL, 'c'},
         {"statistics", no_argument, NULL, 's'},
@@ -1330,6 +1342,20 @@ int main(int argc, char *argv[]){
 
     while ((c = getopt_long(argc, argv, "hcst:o:f:", long_options, &option_index)) != -1) {
         switch (c) {
+            case 0:
+                switch (option_index) {
+                    case 0:
+                    case 1:
+                        //the correct flags are already set to true
+                        //we just need to disable the default output
+                        outputSolution = FALSE;
+                        break;
+                    default:
+                        fprintf(stderr, "Illegal option %c.\n", c);
+                        usage(name);
+                        return EXIT_FAILURE;
+                }
+                break;
             case 'h':
                 help(name);
                 return EXIT_SUCCESS;
@@ -1387,7 +1413,9 @@ int main(int argc, char *argv[]){
         numberOfQuadrangulations++;
         if(filterOnly==0 || numberOfQuadrangulations==filterOnly){
             if(!isEarlyFilteringEnabled || earlyFilterQuadrangulations())
-                generate_perfect_matchings_in_dual();
+                generate_perfect_matchings_in_dual(); 
+            else if(unusedQuadrangulations)
+                outputQuadrangulation();
         }
     }
     printSummary();
