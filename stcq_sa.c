@@ -216,10 +216,8 @@ void printQuadrangulationAutomorphismGroup(){
 
 //////////////////////////////////////////////////////////////////////////////
 
-/* void computePlanarCode(unsigned char code[], int *length, EDGE *start, int maxVertex) */
-
 /*
-fills the array code with the planar code of the structure to which start belongs.
+fills the array code with the angle assignment code of the current structure.
 length will contain the length of the code. The maximum number of vertices is limited
 to 255.
 */
@@ -252,10 +250,8 @@ void computeAngleAssignmentCode(unsigned char code[], int *length) {
     return;
 }
 
-/* void computePlanarCodeShort(unsigned short code[], int *length, EDGE *start, int maxVertex) */
-
 /*
-fills the array code with the planar code of the structure to which start belongs.
+fills the array code with the angle assignment code of the current structure.
 length will contain the length of the code. The maximum number of vertices is limited
 to 65535.
 */
