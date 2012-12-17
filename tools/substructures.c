@@ -223,6 +223,28 @@ int degreeSearch(){
 }
 
 
+int cubicStarSearch(){
+    int i;
+    int count = 0;
+    for(i=0; i<nv; i++){
+        EDGE *e, *elast;
+
+        int isCubicStar = TRUE;
+
+        e = elast = firstedge[i];
+        do {
+            if(degree[e->end]!=3){
+                isCubicStar = FALSE;
+            }
+            e = e->next;
+        } while (e!=elast);
+
+        if(isCubicStar) count++;
+    }
+    return count;
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -567,6 +589,8 @@ void help(char *name){
     fprintf(stderr, " -T, --tristarplusone\n");
     fprintf(stderr, " Looks for a vertex of degree 3 for which all neighbours have degree 3\n");
     fprintf(stderr, " and with at least one vertex of degree 3 at distance 2.\n");
+    fprintf(stderr, " -s, --cubicstar\n");
+    fprintf(stderr, " Looks for a vertex for which all neighbours have degree 3.\n");
 }
 
 void usage(char *name){
@@ -586,13 +610,14 @@ int main(int argc, char *argv[]){
         {"cube", no_argument, NULL, 'c'},
         {"tristar", no_argument, NULL, 't'},
         {"tristarplusone", no_argument, NULL, 'T'},
+        {"cubicstar", no_argument, NULL, 's'},
         {"degree", required_argument, NULL, 'd'}
     };
     int option_index = 0;
     
     int (*searchFunction)() = NULL;
 
-    while ((c = getopt_long(argc, argv, "ho:fXctTd:", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "ho:fXctTd:s", long_options, &option_index)) != -1) {
         switch (c) {
             case 'h':
                 help(name);
@@ -624,6 +649,9 @@ int main(int argc, char *argv[]){
                 break;
             case 'T':
                 searchFunction = &tristarPlusOneSearch;
+                break;
+            case 's':
+                searchFunction = &cubicStarSearch;
                 break;
             case 'd':
                 requestedDegree = atoi(optarg);
