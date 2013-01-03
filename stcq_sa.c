@@ -91,6 +91,7 @@ int outputSolution = TRUE; //by default we output the solution
 
 int isEarlyFilteringEnabled = TRUE;
 int generateAllMatchings = FALSE;
+int boundAngleAssignments = TRUE;
 
 int printUnsolvableSystems = FALSE; //1
 int printStatistics = FALSE; //2
@@ -112,6 +113,12 @@ int duplicateEquationCount = 0;
 
 int nv; //the number of vertices of the current quadrangulation
 int nf; //the number of faces of the current quadrangulation
+int ne; //the number of edges of the current quadrangulation
+
+int orderedFaces[MAXF];
+int checkVerticesAfterFace[MAXF]; //if true for index i, then the vertex restriction
+                                  //should be tested after i faces have been assigned
+int vertexCompletedAfterFace[MAXN];
 
 /*
  * The following variable stores the direction in which the edges of the face
@@ -831,7 +838,43 @@ void createSystem() {
 
     //iterate over all faces
     for (i = 0; i < nv - 2; i++) {
-        EDGE *e1 = matchingEdges[i];
+        EDGE *e1 = matchingEdges[orderedFaces[i]];
+        EDGE *e2 = e1->inverse->prev;
+        EDGE *e3 = e2->inverse->prev;
+        EDGE *e4 = e3->inverse->prev;
+
+        //assert: e1 = e4->inverse->prev;
+        if (angleAssigmentDirection[i]) {
+            alphaCount[e1->end] += 1;
+            betaCount[e2->end] += 1;
+            gammaCount[e3->end] += 1;
+            deltaCount[e4->end] += 1;
+            e2->angle = 0;
+            e3->angle = 1;
+            e4->angle = 2;
+            e1->angle = 3;
+        } else {
+            alphaCount[e4->end] += 1;
+            betaCount[e3->end] += 1;
+            gammaCount[e2->end] += 1;
+            deltaCount[e1->end] += 1;
+            e1->angle = 0;
+            e4->angle = 1;
+            e3->angle = 2;
+            e2->angle = 3;
+        }
+    }
+}
+void createPartialSystem(int currentFaceCount) {
+    //clear systems
+    int i;
+    for (i = 0; i < nv; i++) {
+        alphaCount[i] = betaCount[i] = gammaCount[i] = deltaCount[i] = 0;
+    }
+
+    //iterate over all faces
+    for (i = 0; i < currentFaceCount; i++) {
+        EDGE *e1 = matchingEdges[orderedFaces[i]];
         EDGE *e2 = e1->inverse->prev;
         EDGE *e3 = e2->inverse->prev;
         EDGE *e4 = e3->inverse->prev;
@@ -944,10 +987,81 @@ void handleAngleAssignment() {
 #endif
 }
 
+int checkPartialSystem(int currentFace) {
+    int i, j;
+
+    //reset array
+    for (i = 0; i < nv; i++) {
+        isDuplicateEquation[i] = FALSE;
+    }
+    duplicateEquationCount = 0;
+
+    for (i = 0; i < nv - 1; i++) {
+        if (vertexCompletedAfterFace[i]>=currentFace) continue;
+        if (isDuplicateEquation[i]) continue;
+        /*
+         * this equation is already a duplicate itself, so any equation
+         * that would be at Hamming distance 1 of this equation is also
+         * at Hamming Distance of that earlier equation.
+         */
+        for (j = i + 1; j < nv; j++) {
+            if (vertexCompletedAfterFace[j]>=currentFace) continue;
+            if (isDuplicateEquation[j]) continue;
+            /*
+             * this equation is already a duplicate, so any equation
+             * that would be at Hamming distance 1 of this equation is also
+             * at Hamming Distance of that earlier equation.
+             */
+            int diffAlpha = alphaCount[i] - alphaCount[j];
+            int diffBeta = betaCount[i] - betaCount[j];
+            int diffGamma = gammaCount[i] - gammaCount[j];
+            int diffDelta = deltaCount[i] - deltaCount[j];
+            
+            int hammingDistance = 0;
+            if (diffAlpha != 0) hammingDistance++;
+            if (diffBeta != 0) hammingDistance++;
+            if (diffGamma != 0) hammingDistance++;
+            if (diffDelta != 0) hammingDistance++;
+            if (hammingDistance == 0) {
+                // if we get here, then equation j is a duplicate of i
+                isDuplicateEquation[j] = TRUE;
+                duplicateEquationCount++;
+            } else {
+                if((diffAlpha<=0 && diffBeta<=0 && diffGamma<=0 && diffDelta<=0) || (diffAlpha>=0 && diffBeta>=0 && diffGamma>=0 && diffDelta>=0)){
+                    return FALSE;
+                }
+                if(diffAlpha==-diffGamma && diffBeta==0 && diffDelta==0){
+                    //alpha==gamma
+                    return FALSE;
+                }
+                if(diffAlpha==-diffDelta && diffGamma==0 && diffBeta==0){
+                    //alpha==delta
+                    return FALSE;
+                }
+                if(diffBeta==-diffGamma && diffAlpha==0 && diffDelta==0){
+                    //beta==gamma
+                    return FALSE;
+                }
+                if(diffBeta==-diffDelta && diffGamma==0 && diffAlpha==0){
+                    //beta==delta
+                    return FALSE;
+                }
+            }
+        }
+    }
+    return TRUE;
+}
+
 void assignAnglesForCurrentPerfectMatchingRecursion(int currentFace) {
     if (currentFace == nv - 2) {
         handleAngleAssignment();
     } else {
+        if(boundAngleAssignments && checkVerticesAfterFace[currentFace]){
+            createPartialSystem(currentFace);
+            if(!checkPartialSystem(currentFace)){
+                return;
+            }
+        }
         angleAssigmentDirection[currentFace] = 0;
         assignAnglesForCurrentPerfectMatchingRecursion(currentFace + 1);
         angleAssigmentDirection[currentFace] = 1;
@@ -1123,6 +1237,223 @@ void printSummary() {
 
 //////////////////////////////////////////////////////////////////////////////
 
+void orderFaces(){
+    int numberedFacesAt[MAXN];
+    int isNumbered[MAXF];
+    int faceCounter = 0;
+    EDGE *edge, *edgelast;
+    
+    int i;
+    
+    for(i=0; i<MAXN; i++){
+        numberedFacesAt[i] = 0;
+    }
+    for(i=0; i<MAXF; i++){
+        isNumbered[i] = FALSE;
+    }
+    
+    //number faces at cubic edges
+    for(i=0; i<ne; i++){
+        EDGE *e = edges+i;
+        if(degree[e->end]==3 && degree[e->start]==3){
+            int face1 = e->rightface;
+            int face2 = e->inverse->rightface;
+            //number faces at both side of the edge
+            if(!isNumbered[face1]){
+                //number face
+                isNumbered[face1] = TRUE;
+                orderedFaces[faceCounter] = face1;
+                
+                //mark changes for vertices around face
+                edge = edgelast = facestart[face1];
+                do {
+                    numberedFacesAt[edge->start]++;
+                    if(numberedFacesAt[edge->start]==degree[edge->start]){
+                        //vertex completed
+                        checkVerticesAfterFace[faceCounter] = TRUE;
+                        vertexCompletedAfterFace[edge->start] = faceCounter;
+                    }
+                    edge = edge->inverse->prev;
+                } while (edge!=edgelast);
+                
+                //increase faceCounter
+                faceCounter++;
+            }
+            if(!isNumbered[face2]){
+                //number face
+                isNumbered[face2] = TRUE;
+                orderedFaces[faceCounter] = face2;
+                
+                //mark changes for vertices around face
+                edge = edgelast = facestart[face2];
+                do {
+                    numberedFacesAt[edge->start]++;
+                    if(numberedFacesAt[edge->start]==degree[edge->start]){
+                        //vertex completed
+                        checkVerticesAfterFace[faceCounter] = TRUE;
+                        vertexCompletedAfterFace[edge->start] = faceCounter;
+                    }
+                    edge = edge->inverse->prev;
+                } while (edge!=edgelast);
+                
+                //increase faceCounter
+                faceCounter++;
+            }
+            //number remaining faces incident to the end points
+            int face3 = e->next->rightface;
+            int face4 = e->inverse->next->rightface;
+            if(!isNumbered[face3]){
+                //number face
+                isNumbered[face3] = TRUE;
+                orderedFaces[faceCounter] = face3;
+                
+                //mark changes for vertices around face
+                edge = edgelast = facestart[face3];
+                do {
+                    numberedFacesAt[edge->start]++;
+                    if(numberedFacesAt[edge->start]==degree[edge->start]){
+                        //vertex completed
+                        checkVerticesAfterFace[faceCounter] = TRUE;
+                        vertexCompletedAfterFace[edge->start] = faceCounter;
+                    }
+                    edge = edge->inverse->prev;
+                } while (edge!=edgelast);
+                
+                //increase faceCounter
+                faceCounter++;
+            }
+            if(!isNumbered[face4]){
+                //number face
+                isNumbered[face4] = TRUE;
+                orderedFaces[faceCounter] = face4;
+                
+                //mark changes for vertices around face
+                edge = edgelast = facestart[face4];
+                do {
+                    numberedFacesAt[edge->start]++;
+                    if(numberedFacesAt[edge->start]==degree[edge->start]){
+                        //vertex completed
+                        checkVerticesAfterFace[faceCounter] = TRUE;
+                        vertexCompletedAfterFace[edge->start] = faceCounter;
+                    }
+                    edge = edge->inverse->prev;
+                } while (edge!=edgelast);
+                
+                //increase faceCounter
+                faceCounter++;
+            }
+        }
+    }
+    
+    //number faces at cubic vertices
+    for(i=0; i<nv; i++){
+        if(degree[i]==3){
+            EDGE *e = firstedge[i];
+            //number faces incident to vertex
+            int face1 = e->rightface;
+            int face2 = e->next->rightface;
+            int face3 = e->next->next->rightface;
+            //number faces at both side of the edge
+            if(!isNumbered[face1]){
+                //number face
+                isNumbered[face1] = TRUE;
+                orderedFaces[faceCounter] = face1;
+
+                //mark changes for vertices around face
+                edge = edgelast = facestart[face1];
+                do {
+                    numberedFacesAt[edge->start]++;
+                    if(numberedFacesAt[edge->start]==degree[edge->start]){
+                        //vertex completed
+                        checkVerticesAfterFace[faceCounter] = TRUE;
+                        vertexCompletedAfterFace[edge->start] = faceCounter;
+                    }
+                    edge = edge->inverse->prev;
+                } while (edge!=edgelast);
+
+                //increase faceCounter
+                faceCounter++;
+            }
+            if(!isNumbered[face2]){
+                //number face
+                isNumbered[face2] = TRUE;
+                orderedFaces[faceCounter] = face2;
+
+                //mark changes for vertices around face
+                edge = edgelast = facestart[face2];
+                do {
+                    numberedFacesAt[edge->start]++;
+                    if(numberedFacesAt[edge->start]==degree[edge->start]){
+                        //vertex completed
+                        checkVerticesAfterFace[faceCounter] = TRUE;
+                        vertexCompletedAfterFace[edge->start] = faceCounter;
+                    }
+                    edge = edge->inverse->prev;
+                } while (edge!=edgelast);
+
+                //increase faceCounter
+                faceCounter++;
+            }
+            if(!isNumbered[face3]){
+                //number face
+                isNumbered[face3] = TRUE;
+                orderedFaces[faceCounter] = face3;
+
+                //mark changes for vertices around face
+                edge = edgelast = facestart[face3];
+                do {
+                    numberedFacesAt[edge->start]++;
+                    if(numberedFacesAt[edge->start]==degree[edge->start]){
+                        //vertex completed
+                        checkVerticesAfterFace[faceCounter] = TRUE;
+                        vertexCompletedAfterFace[edge->start] = faceCounter;
+                    }
+                    edge = edge->inverse->prev;
+                } while (edge!=edgelast);
+
+                //increase faceCounter
+                faceCounter++;
+            }
+        }
+    }
+    
+    //number remaining faces
+    for(i=0; i<nv; i++){
+        if(degree[i]!=numberedFacesAt[i]){
+            EDGE *e, *elast;
+            e = elast = firstedge[i];
+            do {
+                //number faces incident to vertex
+                int face = e->rightface;
+                //number faces at both side of the edge
+                if(!isNumbered[face]){
+                    //number face
+                    isNumbered[face] = TRUE;
+                    orderedFaces[faceCounter] = face;
+
+                    //mark changes for vertices around face
+                    edge = edgelast = facestart[face];
+                    do {
+                        numberedFacesAt[edge->start]++;
+                        if(numberedFacesAt[edge->start]==degree[edge->start]){
+                            //vertex completed
+                            checkVerticesAfterFace[faceCounter] = TRUE;
+                            vertexCompletedAfterFace[edge->start] = faceCounter;
+                        }
+                        edge = edge->inverse->prev;
+                    } while (edge!=edgelast);
+
+                    //increase faceCounter
+                    faceCounter++;
+                }
+                e = e->next;
+            } while(e!=elast);
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
 /*
  * This method returns TRUE if the current quadrangulation contains a cubic
  * quadrangle, i.e., a quadrangle with 4 cubic vertices, and FALSE otherwise.
@@ -1263,7 +1594,11 @@ void decodePlanarCode(unsigned short* code) {
         codePosition++; /* read the closing 0 */
     }
     
+    ne = edgeCounter;
+    
     makeDual();
+    
+    // nv - ne/2 + nf = 2
 }
 
 /**
@@ -1494,9 +1829,10 @@ int main(int argc, char *argv[]){
         decodePlanarCode(code);
         numberOfQuadrangulations++;
         if(filterOnly==0 || numberOfQuadrangulations==filterOnly){
-            if(!isEarlyFilteringEnabled || earlyFilterQuadrangulations())
+            if(!isEarlyFilteringEnabled || earlyFilterQuadrangulations()){
+                orderFaces();
                 generate_perfect_matchings_in_dual(); 
-            else if(unusedQuadrangulations)
+            } else if(unusedQuadrangulations)
                 outputQuadrangulation();
         }
     }
