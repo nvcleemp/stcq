@@ -28,6 +28,8 @@
 #define MAXVAL (MAXN-2)/2  /* the maximum degree of a vertex */
 #define MAXCODELENGTH (MAXN+MAXE+3)
 
+#define INFI (MAXN + 1)
+
 #undef FALSE
 #undef TRUE
 #define FALSE 0
@@ -135,6 +137,50 @@ unsigned long long int unusedGraphCount = 0;
 
 int quadrangulationAutomorphisms[4*MAXE][MAXN]; //there are at most 4e automorphisms
 int quadrangulationAutomorphismsCount;
+
+//////////////////////////////////////////////////////////////////////////////
+
+int degreeThreeTypesCompatibility[10][10] =
+{
+    { TRUE, FALSE, FALSE,  TRUE,  TRUE, FALSE, FALSE,  TRUE, FALSE,  TRUE},
+    {FALSE,  TRUE,  TRUE,  TRUE,  TRUE, FALSE, FALSE, FALSE,  TRUE, FALSE},
+    {FALSE,  TRUE,  TRUE,  TRUE, FALSE,  TRUE, FALSE, FALSE, FALSE,  TRUE},
+    { TRUE,  TRUE,  TRUE,  TRUE, FALSE, FALSE,  TRUE, FALSE, FALSE, FALSE},
+    { TRUE,  TRUE, FALSE, FALSE,  TRUE,  TRUE, FALSE,  TRUE, FALSE, FALSE},
+    {FALSE, FALSE,  TRUE, FALSE,  TRUE,  TRUE, FALSE, FALSE,  TRUE,  TRUE},
+    {FALSE, FALSE, FALSE,  TRUE, FALSE, FALSE,  TRUE,  TRUE,  TRUE,  TRUE},
+    { TRUE, FALSE, FALSE, FALSE,  TRUE, FALSE,  TRUE,  TRUE,  TRUE, FALSE},
+    {FALSE,  TRUE, FALSE, FALSE, FALSE,  TRUE,  TRUE,  TRUE,  TRUE, FALSE},
+    { TRUE, FALSE,  TRUE, FALSE, FALSE,  TRUE,  TRUE, FALSE, FALSE,  TRUE}
+};
+
+int degreeThreeTypesCombinationVertexLowerBound[10][10] =
+{
+    {   0, INFI, INFI,    0,    0, INFI, INFI,    8, INFI,   10},
+    {INFI,    0,   10,    0,    0, INFI, INFI, INFI,    0, INFI},
+    {INFI,   10,    0,   10, INFI,    8, INFI, INFI, INFI,    0},
+    {   0,    0,   10,    0, INFI, INFI,    0, INFI, INFI, INFI},
+    {   0,    0, INFI, INFI,    0,   10, INFI,    0, INFI, INFI},
+    {INFI, INFI,   10, INFI,   10,    0, INFI, INFI,    0,    0},
+    {INFI, INFI, INFI,    0, INFI, INFI,    0,   10,    0,    0},
+    {   8, INFI, INFI, INFI,    0, INFI,   10,    0,   10, INFI},
+    {INFI,    0, INFI, INFI, INFI,    0,    0,   10,    0, INFI},
+    {  10, INFI,    0, INFI, INFI,    0,    0, INFI, INFI,    0}
+};
+
+int degreeThreeTypesCombinationVertexUpperBound[10][10] =
+{
+    {INFI,    0,    0, INFI, INFI,    0,    0,    8,    0, INFI},
+    {   0, INFI, INFI, INFI, INFI,    0,    0,    0, INFI,    0},
+    {   0, INFI, INFI, INFI,    0,    8,    0,    0,    0, INFI},
+    {INFI, INFI, INFI, INFI,    0,    0, INFI,    0,    0,    0},
+    {INFI, INFI,    0,    0, INFI, INFI,    0, INFI,    0,    0},
+    {   0,    0,    8,    0, INFI, INFI,    0,    0, INFI, INFI},
+    {   0,    0,    0, INFI,    0,    0, INFI, INFI, INFI, INFI},
+    {   8,    0,    0,    0, INFI,    0, INFI, INFI, INFI,    0},
+    {   0, INFI,    0,    0,    0, INFI, INFI, INFI, INFI,    0},
+    {INFI,    0, INFI,    0,    0, INFI, INFI,    0,    0, INFI}
+};
 
 //////////////////////////////////////////////////////////////////////////////
 
