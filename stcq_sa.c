@@ -135,6 +135,8 @@ char angleAroundVertex[MAXN][MAXN];
 
 unsigned long long int unusedGraphCount = 0;
 
+unsigned long long int solvable = 0;
+
 int quadrangulationAutomorphisms[4*MAXE][MAXN]; //there are at most 4e automorphisms
 int quadrangulationAutomorphismsCount;
 
@@ -649,8 +651,6 @@ void handleSolution(lprec *lp) {
         }
     }
 }
-
-unsigned long long int solvable = 0;
 
 void printSystem() {
     int i;
