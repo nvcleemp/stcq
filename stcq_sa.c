@@ -1878,8 +1878,12 @@ int main(int argc, char *argv[]){
             if(!isEarlyFilteringEnabled || earlyFilterQuadrangulations()){
                 orderFaces();
                 generate_perfect_matchings_in_dual(); 
-            } else if(unusedQuadrangulations)
+            } else if(unusedQuadrangulations){
+                unusedGraphCount++;
                 outputQuadrangulation();
+            } else {
+                unusedGraphCount++;
+            }
         }
     }
     printSummary();
