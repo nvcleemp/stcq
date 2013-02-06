@@ -1275,7 +1275,8 @@ void printSummary() {
     fprintf(stderr, "\nSolvable: %llu\n", solvable);
     if (printStatistics) {
         fprintf(stderr, "\nNon-solvable: %llu\n", assignmentCount - solvable);
-        fprintf(stderr, "\n%llu quadrangulations don't correspond to a tiling.\n", unusedGraphCount);
+        fprintf(stderr, "\n%llu quadrangulations do not correspond to a tiling.\n", unusedGraphCount);
+        fprintf(stderr, "%llu quadrangulations can correspond to a tiling.\n", numberOfQuadrangulations - unusedGraphCount);
         fprintf(stderr, "\nRejected by coefficient diff: %llu\n", rejectedByCoefficientDiff);
         fprintf(stderr, "Rejected by lpsolve: %llu\n\n", assignmentCount - solvable - rejectedByCoefficientDiff);
     }
