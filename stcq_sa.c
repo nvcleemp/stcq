@@ -113,6 +113,8 @@ int deltaCount[MAXN];
 int isDuplicateEquation[MAXN];
 int duplicateEquationCount = 0;
 
+int degreeThreeVertexTypes[MAXN];
+
 int nv; //the number of vertices of the current quadrangulation
 int nf; //the number of faces of the current quadrangulation
 int ne; //the number of edges of the current quadrangulation
@@ -1072,6 +1074,11 @@ int checkPartialSystem(int currentFace) {
     //reset array
     for (i = 0; i < nv; i++) {
         isDuplicateEquation[i] = FALSE;
+        if(degree[i]==3 && vertexCompletedAfterFace[i]<currentFace){
+            degreeThreeVertexTypes[i] = getDegreeThreeVertexType(i);
+        } else {
+            degreeThreeVertexTypes[i] = -1;
+        }
     }
     duplicateEquationCount = 0;
 
@@ -1091,6 +1098,22 @@ int checkPartialSystem(int currentFace) {
              * that would be at Hamming distance 1 of this equation is also
              * at Hamming Distance of that earlier equation.
              */
+            
+            //in case of two vertices of degree 3, we perform an extra check
+            if(degree[i]==3 && degree[j]==3){
+                int ti = degreeThreeVertexTypes[i];
+                int tj = degreeThreeVertexTypes[j];
+                if(!degreeThreeTypesCompatibility[ti][tj]){
+                    return FALSE;
+                }
+                if(degreeThreeTypesCombinationVertexLowerBound[ti][tj]>nv){
+                    return FALSE;
+                }
+                if(degreeThreeTypesCombinationVertexUpperBound[ti][tj]<nv){
+                    return FALSE;
+                }
+            }
+            
             int diffAlpha = alphaCount[i] - alphaCount[j];
             int diffBeta = betaCount[i] - betaCount[j];
             int diffGamma = gammaCount[i] - gammaCount[j];
