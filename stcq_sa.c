@@ -194,7 +194,7 @@ int getDegreeThreeVertexType(int v){
     d = deltaCount[v];
     if(a+b+c+d!=3){
         fprintf(stderr, "Something went wrong. :-(\n");
-        exit();
+        exit(0);
     }
     if(b==3){
         return 0;
