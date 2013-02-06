@@ -184,6 +184,39 @@ int degreeThreeTypesCombinationVertexUpperBound[10][10] =
     {INFI,    0, INFI,    0,    0, INFI, INFI,    0,    0, INFI}
 };
 
+int getDegreeThreeVertexType(int v){
+    int a, b, c, d;
+    a = alphaCount[v];
+    b = betaCount[v];
+    c = gammaCount[v];
+    d = deltaCount[v];
+    if(a+b+c+d!=3){
+        fprintf(stderr, "Something went wrong. :-(\n");
+        exit();
+    }
+    if(b==3){
+        return 0;
+    } else if(b==2 && c==1){
+        return 1;
+    } else if(a==1 && d==1 && b==1){
+        return 2;
+    } else if(a==2 && c==1){
+        return 3;
+    } else if(a==2 && b==1){
+        return 4;
+    } else if(c==3){
+        return 5;
+    } else if(c==2 && b==1){
+        return 6;
+    } else if(a==1 && d==1 && c==1){
+        return 7;
+    } else if(d==2 && b==1){
+        return 8;
+    } else{
+        return 9;
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 void printPlanarGraph(){
