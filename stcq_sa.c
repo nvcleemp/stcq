@@ -1071,11 +1071,27 @@ void handleAngleAssignment() {
 int checkPartialSystem(int currentFace) {
     int i, j;
 
-    //reset array
+    //reset array and count number of degree 3 types
+    int degreeThreeVertexTypeCount = 0;
+    int type1, type2;
     for (i = 0; i < nv; i++) {
         isDuplicateEquation[i] = FALSE;
         if(degree[i]==3 && vertexCompletedAfterFace[i]<currentFace){
-            degreeThreeVertexTypes[i] = getDegreeThreeVertexType(i);
+            int currentType = degreeThreeVertexTypes[i] = getDegreeThreeVertexType(i);
+            if(degreeThreeVertexTypeCount == 0){
+                type1 = currentType;
+                degreeThreeVertexTypeCount = 1;
+            } else if(degreeThreeVertexTypeCount == 1){
+                if(type1 != currentType){
+                    type2 = currentType;
+                    degreeThreeVertexTypeCount = 2;
+                }
+            } else { //(degreeThreeVertexTypeCount == 2)
+                if(type1 != currentType && type2 != currentType){
+                    //at most two different types of degree three vertices
+                    return FALSE;
+                }
+            }
         } else {
             degreeThreeVertexTypes[i] = -1;
         }
