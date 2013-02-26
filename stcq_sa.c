@@ -1850,6 +1850,10 @@ void help(char *name){
     fprintf(stderr, "       Print extra statistics\n");
     fprintf(stderr, "    -f, --filter number\n");
     fprintf(stderr, "       Only perform the calculations for the graph with the given number.\n");
+    fprintf(stderr, "    --usedquadrangulations\n");
+    fprintf(stderr, "       Only output quadrangulations that might be used in a STCQ.\n");
+    fprintf(stderr, "    --unusedquadrangulations\n");
+    fprintf(stderr, "       Only output quadrangulations that cannot be used in a STCQ.\n");
 }
 
 void usage(char *name){
