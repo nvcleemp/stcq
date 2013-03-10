@@ -101,6 +101,8 @@ int printStatistics = FALSE; //2
 int writeLpsolveUnsolvedSystems = FALSE; //1
 int writeHammingDistanceUnsolvedSystems = FALSE; //2
 
+FILE *latexSummaryFile = NULL;
+
 int matched[MAXF];
 int match[MAXF];
 EDGE *matchingEdges[MAXF];
@@ -251,6 +253,31 @@ void printAngleAssignment(){
         fprintf(stderr, "\n");
     }
     fprintf(stderr, "\n");
+}
+
+void printAngleAssignmentLatex(){
+    if(latexSummaryFile==NULL) return;
+    int i;
+    for(i=0; i<nv; i++){
+        fprintf(latexSummaryFile, "%d: ", i);
+        EDGE *e, *elast;
+    
+        e = elast = firstedge[i];
+        do {
+            fprintf(latexSummaryFile, "%d ", e->end);
+            if(e->angle==0)
+                fprintf(latexSummaryFile, "($\\alpha$) ");
+            else if(e->angle==1)
+                fprintf(latexSummaryFile, "($\\beta$) ");
+            else if(e->angle==2)
+                fprintf(latexSummaryFile, "($\\gamma$) ");
+            else// (e->angle==3)
+                fprintf(latexSummaryFile, "($\\delta$) ");
+            e = e->next;
+        } while (e!=elast);
+        fprintf(latexSummaryFile, "\\\\\n");
+    }
+    fprintf(latexSummaryFile, "\\\\\n");
 }
 
 void printSphericalTilingByCongruentQuadrangles(lprec *lp){
@@ -683,6 +710,10 @@ void handleSolution(lprec *lp) {
         } else if(outputFormat == 'c'){
             //code
 
+        }
+        if(latexSummaryFile!=NULL){
+            //output to LaTeX
+            printAngleAssignmentLatex();
         }
     }
 }
@@ -1871,6 +1902,7 @@ int main(int argc, char *argv[]){
     static struct option long_options[] = {
         {"usedquadrangulations", no_argument, &usedQuadrangulations, TRUE},
         {"unusedquadrangulations", no_argument, &unusedQuadrangulations, TRUE},
+        {"latex", required_argument, NULL, 0},
         {"help", no_argument, NULL, 'h'},
         {"concave", no_argument, NULL, 'c'},
         {"statistics", no_argument, NULL, 's'},
@@ -1890,8 +1922,11 @@ int main(int argc, char *argv[]){
                         //we just need to disable the default output
                         outputSolution = FALSE;
                         break;
+                    case 2:
+                        latexSummaryFile = fopen(optarg, "w");
+                        break;
                     default:
-                        fprintf(stderr, "Illegal option %c.\n", c);
+                        fprintf(stderr, "Illegal option.\n");
                         usage(name);
                         return EXIT_FAILURE;
                 }
