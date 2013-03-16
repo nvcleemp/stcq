@@ -141,6 +141,8 @@ unsigned long long int unusedGraphCount = 0;
 
 unsigned long long int solvable = 0;
 
+unsigned long long int solvableAndCanonical = 0;
+
 int quadrangulationAutomorphisms[4*MAXE][MAXN]; //there are at most 4e automorphisms
 int quadrangulationAutomorphismsCount;
 
@@ -702,7 +704,160 @@ void calculateAutomorphismGroupQuadrangulation(){
 
 //////////////////////////////////////////////////////////////////////////////
 
+int aaCertificate[MAXE+MAXN];
+int aaAnglesCertificate[MAXE+MAXN];
+int aaAlternateCertificate[MAXE+MAXN];
+int aaAnglesAlternateCertificate[MAXE+MAXN];
+int aaAlternateLabelling[MAXN];
+EDGE *aaAlternateFirstedge[MAXN];
+int aaQueue[MAXN];
+
+void constructAlternateAngleAssignmentCertificate(EDGE *eStart){
+    int i;
+    for(i=0; i<MAXN; i++){
+        aaAlternateLabelling[i] = MAXN;
+    }
+    EDGE *e, *elast;
+    int head = 1;
+    int tail = 0;
+    int vertexCounter = 1;
+    int aaAlternateCertificatePosition = 0;
+    aaQueue[0] = eStart->start;
+    aaAlternateFirstedge[eStart->start] = eStart;
+    aaAlternateLabelling[eStart->start] = 0;
+    while(head>tail){
+        int currentVertex = aaQueue[tail++];
+        e = elast = aaAlternateFirstedge[currentVertex];
+        do {
+            if(aaAlternateLabelling[e->end]==MAXN){
+                aaQueue[head++] = e->end;
+                aaAlternateLabelling[e->end] = vertexCounter++;
+                aaAlternateFirstedge[e->end] = e->inverse;
+            }
+            aaAlternateCertificate[aaAlternateCertificatePosition] = aaAlternateLabelling[e->end];
+            aaAnglesAlternateCertificate[aaAlternateCertificatePosition++] = e->angle;
+            e = e->next;
+        } while (e!=elast);
+        aaAlternateCertificate[aaAlternateCertificatePosition] = MAXN;
+        aaAnglesAlternateCertificate[aaAlternateCertificatePosition++] = MAXN;
+    }
+}
+
+void constructAlternateAngleAssignmentCertificateOrientationReversing(EDGE *eStart){
+    int i;
+    for(i=0; i<MAXN; i++){
+        aaAlternateLabelling[i] = MAXN;
+    }
+    EDGE *e, *elast;
+    int head = 1;
+    int tail = 0;
+    int vertexCounter = 1;
+    int aaAlternateCertificatePosition = 0;
+    aaQueue[0] = eStart->start;
+    aaAlternateFirstedge[eStart->start] = eStart;
+    aaAlternateLabelling[eStart->start] = 0;
+    while(head>tail){
+        int currentVertex = aaQueue[tail++];
+        e = elast = aaAlternateFirstedge[currentVertex];
+        do {
+            if(aaAlternateLabelling[e->end]==MAXN){
+                aaQueue[head++] = e->end;
+                aaAlternateLabelling[e->end] = vertexCounter++;
+                aaAlternateFirstedge[e->end] = e->inverse;
+            }
+            aaAlternateCertificate[aaAlternateCertificatePosition] = aaAlternateLabelling[e->end];
+            e = e->prev;
+            aaAnglesAlternateCertificate[aaAlternateCertificatePosition++] = e->angle;
+        } while (e!=elast);
+        aaAlternateCertificate[aaAlternateCertificatePosition] = MAXN;
+        aaAnglesAlternateCertificate[aaAlternateCertificatePosition++] = MAXN;
+    }
+}
+
+/**
+ * Checks whether the current angle assignment is canonical.
+ */
+int isCanonicalAngleAssignment(){
+    //construct certificate
+    int pos = 0;
+    int i, j;
+    
+    for(i=0; i<nv; i++){
+        EDGE *e, *elast;
+
+        e = elast = firstedge[i];
+        do {
+            aaCertificate[pos] = e->end;
+            aaAnglesCertificate[pos++] = e->angle;
+            e = e->next;
+        } while (e!=elast);
+        aaCertificate[pos] = MAXN;
+        aaAnglesCertificate[pos++] = MAXN;
+    }
+    
+    //construct alternate certificates
+    EDGE *ebase = firstedge[0];
+    
+    for(i=0; i<nv; i++){
+        if(degree[i]==degree[0]){
+            EDGE *e, *elast;
+
+            e = elast = firstedge[i];
+            do {
+                if(e!=ebase){
+                    constructAlternateAngleAssignmentCertificate(e);
+                    //if the vertex certificates are equal, we compare the angle certificates
+                    if(memcmp(aaCertificate, aaAlternateCertificate, sizeof(int)*pos) == 0) {
+                        //compare angle certificates
+                        for(j = 0; j < pos; j++){
+                            if(aaAnglesCertificate[j] < aaAnglesAlternateCertificate[j]){
+                                break;
+                            } else if(aaAnglesCertificate[j] > aaAnglesAlternateCertificate[j]){
+                                return FALSE;
+                            }
+                        }
+                        //compare angle-reversed certificates
+                        for(j = 0; j < pos; j++){
+                            if(aaAnglesCertificate[j] < 3 - aaAnglesAlternateCertificate[j]){
+                                break;
+                            } else if(aaAnglesCertificate[j] > 3 - aaAnglesAlternateCertificate[j]){
+                                return FALSE;
+                            }
+                        }
+                    }
+                }
+                constructAlternateAngleAssignmentCertificateOrientationReversing(e);
+                //if the vertex certificates are equal, we compare the angle certificates
+                if(memcmp(aaCertificate, aaAlternateCertificate, sizeof(int)*pos) == 0) {
+                    //compare angle certificates
+                    for(j = 0; j < pos; j++){
+                        if(aaAnglesCertificate[j] < aaAnglesAlternateCertificate[j]){
+                            break;
+                        } else if(aaAnglesCertificate[j] > aaAnglesAlternateCertificate[j]){
+                            return FALSE;
+                        }
+                    }
+                    //compare angle-reversed certificates
+                    for(j = 0; j < pos; j++){
+                        if(aaAnglesCertificate[j] < 3 - aaAnglesAlternateCertificate[j]){
+                            break;
+                        } else if(aaAnglesCertificate[j] > 3 - aaAnglesAlternateCertificate[j]){
+                            return FALSE;
+                        }
+                    }
+                }
+                e = e->next;
+            } while (e!=elast);
+        }
+    }
+    return TRUE;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
 void handleSolution(lprec *lp) {
+    if(!isCanonicalAngleAssignment()) return;
+    solvableAndCanonical++;
     if(outputSolution){
         if(outputFormat == 'h'){
             //human-readable output
@@ -1219,8 +1374,9 @@ void assignAnglesForCurrentPerfectMatchingRecursion(int currentFace) {
 }
 
 void assignAnglesForCurrentPerfectMatching() {
-    //we fix the direction of one face to prevent mirror images to both be generated.
     angleAssigmentDirection[0] = 0;
+    assignAnglesForCurrentPerfectMatchingRecursion(1);
+    angleAssigmentDirection[0] = 1;
     assignAnglesForCurrentPerfectMatchingRecursion(1);
 }
 
@@ -1376,6 +1532,7 @@ void printSummary() {
     fprintf(stderr, "\nMatchings: %llu\n", totalPerfectMatchingsCount);
     fprintf(stderr, "\nAssignments: %llu\n", assignmentCount);
     fprintf(stderr, "\nSolvable: %llu\n", solvable);
+    fprintf(stderr, "\nSolvable and canonical: %llu\n", solvableAndCanonical);
     if (printStatistics) {
         fprintf(stderr, "\nNon-solvable: %llu\n", assignmentCount - solvable);
         fprintf(stderr, "\n%llu quadrangulations do not correspond to a tiling.\n", unusedGraphCount);
