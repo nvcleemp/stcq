@@ -35,6 +35,8 @@
 #define FALSE 0
 #define TRUE  1
 
+typedef int boolean;
+
 typedef struct e /* The data type used for edges */ {
     int start; /* vertex where the edge starts */
     int end; /* vertex where the edge ends */
@@ -76,30 +78,30 @@ static int markvalue = 30000;
 unsigned long long int numberOfQuadrangulations = 0;
 unsigned long long int rejectedByCoefficientDiff = 0;
 
-int printDuplicateEquations = FALSE;
+boolean printDuplicateEquations = FALSE;
 
 unsigned long long int filterOnly = 0;
 
-int onlyConvex = TRUE;
+boolean onlyConvex = TRUE;
 
 char outputFormat = 'n'; //defaults to no output
 
 char generatedType = 't'; //defaults to spherical tilings
 
-int unusedQuadrangulations = FALSE; // if set to TRUE: unused quadrangulations will be written to stdout
-int usedQuadrangulations = FALSE; // if set to TRUE: used quadrangulations will be written to stdout
+boolean unusedQuadrangulations = FALSE; // if set to TRUE: unused quadrangulations will be written to stdout
+boolean usedQuadrangulations = FALSE; // if set to TRUE: used quadrangulations will be written to stdout
 
-int outputSolution = TRUE; //by default we output the solution
+boolean outputSolution = TRUE; //by default we output the solution
 
-int isEarlyFilteringEnabled = TRUE;
-int generateAllMatchings = FALSE;
-int boundAngleAssignments = TRUE;
+boolean isEarlyFilteringEnabled = TRUE;
+boolean generateAllMatchings = FALSE;
+boolean boundAngleAssignments = TRUE;
 
-int printUnsolvableSystems = FALSE; //1
-int printStatistics = FALSE; //2
+boolean printUnsolvableSystems = FALSE; //1
+boolean printStatistics = FALSE; //2
 
-int writeLpsolveUnsolvedSystems = FALSE; //1
-int writeHammingDistanceUnsolvedSystems = FALSE; //2
+boolean writeLpsolveUnsolvedSystems = FALSE; //1
+boolean writeHammingDistanceUnsolvedSystems = FALSE; //2
 
 FILE *latexSummaryFile = NULL;
 
@@ -112,7 +114,7 @@ int betaCount[MAXN];
 int gammaCount[MAXN];
 int deltaCount[MAXN];
 
-int isDuplicateEquation[MAXN];
+boolean isDuplicateEquation[MAXN];
 int duplicateEquationCount = 0;
 
 int degreeThreeVertexTypes[MAXN];
@@ -404,7 +406,7 @@ void computeAngleAssignmentCodeShort(unsigned short code[], int *length) {
 }
 
 void writeAngleAssignment(){
-    static int first = TRUE;
+    static boolean first = TRUE;
     
     if(first){
         fprintf(stdout, ">>angle_assignment<<");
@@ -777,7 +779,7 @@ void constructAlternateAngleAssignmentCertificateOrientationReversing(EDGE *eSta
 /**
  * Checks whether the current angle assignment is canonical.
  */
-int isCanonicalAngleAssignment(){
+boolean isCanonicalAngleAssignment(){
     //construct certificate
     int pos = 0;
     int i, j;
@@ -1254,7 +1256,7 @@ void handleAngleAssignment() {
 #endif
 }
 
-int checkPartialSystem(int currentFace) {
+boolean checkPartialSystem(int currentFace) {
     int i, j;
 
     //reset array and count number of degree 3 types
@@ -1765,12 +1767,12 @@ void orderFaces(){
  * This method returns TRUE if the current quadrangulation contains a cubic
  * quadrangle, i.e., a quadrangle with 4 cubic vertices, and FALSE otherwise.
  */
-int cubicQuadSearch(){
+boolean cubicQuadSearch(){
     int i;
     for(i=0; i<nf; i++){
         EDGE *e, *elast;
         
-        int isCubicQuad = TRUE;
+        boolean isCubicQuad = TRUE;
         
         e = elast = facestart[i];
         do {
@@ -1790,7 +1792,7 @@ int cubicQuadSearch(){
  * admit a STCQ2. At the moment this is only the case when the quadrangulation
  * contains a cubic quadrangle, i.e., a quadrangle with 4 cubic vertices.
  */
-int earlyFilterQuadrangulations(){
+boolean earlyFilterQuadrangulations(){
     if(nf>6 && cubicQuadSearch()){
         return FALSE;
     }
