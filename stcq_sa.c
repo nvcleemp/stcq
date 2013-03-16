@@ -105,7 +105,7 @@ boolean writeHammingDistanceUnsolvedSystems = FALSE; //2
 
 FILE *latexSummaryFile = NULL;
 
-int matched[MAXF];
+boolean matched[MAXF];
 int match[MAXF];
 EDGE *matchingEdges[MAXF];
 
@@ -124,9 +124,9 @@ int nf; //the number of faces of the current quadrangulation
 int ne; //the number of edges of the current quadrangulation
 
 int orderedFaces[MAXF];
-int checkVerticesAfterFace[MAXF]; //if true for index i, then the vertex restriction
+boolean checkVerticesAfterFace[MAXF]; //if true for index i, then the vertex restriction
                                   //should be tested after i faces have been assigned
-int vertexCompletedAfterFace[MAXN];
+boolean vertexCompletedAfterFace[MAXN];
 
 /*
  * The following variable stores the direction in which the edges of the face
@@ -150,7 +150,7 @@ int quadrangulationAutomorphismsCount;
 
 //////////////////////////////////////////////////////////////////////////////
 
-int degreeThreeTypesCompatibility[10][10] =
+boolean degreeThreeTypesCompatibility[10][10] =
 {
     { TRUE, FALSE, FALSE,  TRUE,  TRUE, FALSE, FALSE,  TRUE, FALSE,  TRUE},
     {FALSE,  TRUE,  TRUE,  TRUE,  TRUE, FALSE, FALSE, FALSE,  TRUE, FALSE},
@@ -491,7 +491,7 @@ void computePlanarCodeShort(unsigned short code[], int *length) {
 }
 
 void writePlanarCode(){
-    static int first = TRUE;
+    static boolean first = TRUE;
     
     if(first){
         fprintf(stdout, ">>planar_code<<");
@@ -1171,7 +1171,7 @@ void createPartialSystem(int currentFaceCount) {
     }
 }
 
-int firstCheckOfSystem() {
+boolean firstCheckOfSystem() {
     int i, j;
     /* If the system contains two equations that are at hamming distance 1,
      * we return FALSE. At the same time we remove duplicate equations (i.e.
