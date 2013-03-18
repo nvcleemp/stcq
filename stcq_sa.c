@@ -891,6 +891,8 @@ void calculateAutomorphismGroupAngleAssignments(){
     int i;
     
     for(i=0; i<nv; i++){
+        aaAutomorphisms[aaAutomorphismsCount][i] = i; //include identity
+        
         EDGE *e, *elast;
 
         e = elast = firstedge[i];
@@ -902,6 +904,8 @@ void calculateAutomorphismGroupAngleAssignments(){
         aaCertificate[pos] = MAXN;
         aaAnglesCertificate[pos++] = MAXN;
     }
+    
+    aaAutomorphismsCount++;
     
     //construct alternate certificates
     EDGE *ebase = firstedge[0];
