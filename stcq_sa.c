@@ -150,6 +150,9 @@ unsigned long long int solvableAndCanonical = 0;
 int quadrangulationAutomorphisms[4*MAXE][MAXN]; //there are at most 4e automorphisms
 int quadrangulationAutomorphismsCount;
 
+int aaAutomorphisms[4*MAXE][MAXN]; //there are at most 4e automorphisms
+int aaAutomorphismsCount;
+
 //////////////////////////////////////////////////////////////////////////////
 
 boolean degreeThreeTypesCompatibility[10][10] =
@@ -855,6 +858,57 @@ boolean isCanonicalAngleAssignment(){
         }
     }
     return TRUE;
+}
+
+void calculateAutomorphismGroupAngleAssignments(){
+    aaAutomorphismsCount = 0;
+    
+    //construct certificate
+    int pos = 0;
+    int i;
+    
+    for(i=0; i<nv; i++){
+        EDGE *e, *elast;
+
+        e = elast = firstedge[i];
+        do {
+            aaCertificate[pos] = e->end;
+            aaAnglesCertificate[pos++] = e->angle;
+            e = e->next;
+        } while (e!=elast);
+        aaCertificate[pos] = MAXN;
+        aaAnglesCertificate[pos++] = MAXN;
+    }
+    
+    //construct alternate certificates
+    EDGE *ebase = firstedge[0];
+    
+    for(i=0; i<nv; i++){
+        if(degree[i]==degree[0]){
+            EDGE *e, *elast;
+
+            e = elast = firstedge[i];
+            do {
+                if(e!=ebase){
+                    constructAlternateAngleAssignmentCertificate(e);
+                    if(memcmp(aaCertificate, aaAlternateCertificate, sizeof(int)*pos) == 0 &&
+                            memcmp(aaAnglesCertificate, aaAnglesAlternateCertificate, sizeof(int)*pos) == 0) {
+                        //store automorphism
+                        memcpy(aaAutomorphisms[aaAutomorphismsCount], aaAlternateLabelling, sizeof(int)*MAXN);
+                        aaAutomorphismsCount++;
+                    }
+                }
+                constructAlternateAngleAssignmentCertificateOrientationReversing(e);
+                if(memcmp(aaCertificate, aaAlternateCertificate, sizeof(int)*pos) == 0 &&
+                        memcmp(aaAnglesCertificate, aaAnglesAlternateCertificate, sizeof(int)*pos) == 0) {
+                    //store automorphism
+                    memcpy(aaAutomorphisms[aaAutomorphismsCount], aaAlternateLabelling, sizeof(int)*MAXN);
+                    aaAutomorphismsCount++;
+                }
+                e = e->next;
+            } while (e!=elast);
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////
