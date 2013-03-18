@@ -336,25 +336,10 @@ void printGroupElement(FILE *f, int *groupElement, int offset){
 }
 
 void printQuadrangulationAutomorphismGroup(){    
-    int i, j, printed[MAXN], next;
+    int i;
     fprintf(stderr, "automorphism count: %d\n", quadrangulationAutomorphismsCount);
     for (i = 0; i < quadrangulationAutomorphismsCount; i++) {
-        for(j=0; j < MAXN; j++){
-            printed[j] = 0;
-        }
-        for(j=0; j < nv; j++){
-            if(!printed[j]){
-                fprintf(stderr, "(%d", j);
-                printed[j] = 1;
-                next = quadrangulationAutomorphisms[i][j];
-                while(!printed[next]){
-                    fprintf(stderr, " %d", next);
-                    printed[next] = 1;
-                    next = quadrangulationAutomorphisms[i][next];
-                }
-                fprintf(stderr, ") ");
-            }
-        }
+        printGroupElement(stderr, quadrangulationAutomorphisms[i], 0);
         fprintf(stderr, "\n");
     }
     fprintf(stderr, "\n");
