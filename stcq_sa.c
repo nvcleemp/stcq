@@ -157,6 +157,10 @@ int aaAutomorphismsCount;
 
 //////////////////////////////////////////////////////////////////////////////
 
+void calculateAutomorphismGroupAngleAssignments();
+
+//////////////////////////////////////////////////////////////////////////////
+
 boolean degreeThreeTypesCompatibility[10][10] =
 {
     { TRUE, FALSE, FALSE,  TRUE,  TRUE, FALSE, FALSE,  TRUE, FALSE,  TRUE},
