@@ -105,6 +105,8 @@ boolean writeHammingDistanceUnsolvedSystems = FALSE; //2
 
 boolean oneBased = FALSE;
 
+boolean includeGroup = FALSE;
+
 FILE *latexSummaryFile = NULL;
 
 boolean matched[MAXF];
@@ -232,6 +234,27 @@ int getDegreeThreeVertexType(int v){
 
 //////////////////////////////////////////////////////////////////////////////
 
+void printGroupElement(FILE *f, int *groupElement, int offset){
+    int i, next;
+    boolean printed[MAXN];
+    
+    for(i=0; i<MAXN; i++) printed[i] = FALSE;
+
+    for(i=0; i < nv; i++){
+        if(!printed[i]){
+            fprintf(f, "(%d", i + offset);
+            printed[i] = 1;
+            next = groupElement[i];
+            while(!printed[next]){
+                fprintf(f, " %d", next + offset);
+                printed[next] = TRUE;
+                next = groupElement[next];
+            }
+            fprintf(f, ") ");
+        }
+    }
+}
+
 void printPlanarGraph(){
     int i;
     for(i=0; i<nv; i++){
@@ -267,6 +290,17 @@ void printAngleAssignment(){
 void printAngleAssignmentLatex(){
     if(latexSummaryFile==NULL) return;
     int i;
+    
+    //start with the group
+    if(includeGroup){
+        calculateAutomorphismGroupAngleAssignments();
+        fprintf(latexSummaryFile, "automorphism count: %d\\\\\n", aaAutomorphismsCount);
+        for(i=0; i<aaAutomorphismsCount; i++){
+            printGroupElement(latexSummaryFile, aaAutomorphisms[i], oneBased);
+            fprintf(latexSummaryFile, "\\\\\n");
+        }
+    }
+    
     for(i=0; i<nv; i++){
         fprintf(latexSummaryFile, "%d: ", i + oneBased);
         EDGE *e, *elast;
@@ -312,27 +346,6 @@ void printFaceMatching(){
         }
     }
     fprintf(stderr, "\n");
-}
-
-void printGroupElement(FILE *f, int *groupElement, int offset){
-    int i, next;
-    boolean printed[MAXN];
-    
-    for(i=0; i<MAXN; i++) printed[i] = FALSE;
-
-    for(i=0; i < nv; i++){
-        if(!printed[i]){
-            fprintf(f, "(%d", i + offset);
-            printed[i] = 1;
-            next = groupElement[i];
-            while(!printed[next]){
-                fprintf(f, " %d", next + offset);
-                printed[next] = TRUE;
-                next = groupElement[next];
-            }
-            fprintf(f, ") ");
-        }
-    }
 }
 
 void printQuadrangulationAutomorphismGroup(){    
@@ -2135,6 +2148,7 @@ int main(int argc, char *argv[]){
         {"unusedquadrangulations", no_argument, &unusedQuadrangulations, TRUE},
         {"latex", required_argument, NULL, 0},
         {"onebased", no_argument, &oneBased, TRUE},
+        {"group", no_argument, &includeGroup, TRUE},
         {"help", no_argument, NULL, 'h'},
         {"concave", no_argument, NULL, 'c'},
         {"statistics", no_argument, NULL, 's'},
@@ -2158,6 +2172,7 @@ int main(int argc, char *argv[]){
                         latexSummaryFile = fopen(optarg, "w");
                         break;
                     case 3:
+                    case 4:
                         break;
                     default:
                         fprintf(stderr, "Illegal option.\n");
