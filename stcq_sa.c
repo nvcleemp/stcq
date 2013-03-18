@@ -154,6 +154,7 @@ int quadrangulationAutomorphismsCount;
 
 int aaAutomorphisms[4*MAXE][MAXN]; //there are at most 4e automorphisms
 int aaAutomorphismsCount;
+boolean aaAutomorphismGroupContainsOrientationReversingSymmetry;
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -885,6 +886,7 @@ boolean isCanonicalAngleAssignment(){
 
 void calculateAutomorphismGroupAngleAssignments(){
     aaAutomorphismsCount = 0;
+    aaAutomorphismGroupContainsOrientationReversingSymmetry = FALSE;
     
     //construct certificate
     int pos = 0;
@@ -931,6 +933,7 @@ void calculateAutomorphismGroupAngleAssignments(){
                     //store automorphism
                     memcpy(aaAutomorphisms[aaAutomorphismsCount], aaAlternateLabelling, sizeof(int)*MAXN);
                     aaAutomorphismsCount++;
+                    aaAutomorphismGroupContainsOrientationReversingSymmetry = TRUE;
                 }
                 e = e->next;
             } while (e!=elast);
