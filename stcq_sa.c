@@ -314,6 +314,27 @@ void printFaceMatching(){
     fprintf(stderr, "\n");
 }
 
+void printGroupElement(FILE *f, int *groupElement, int offset){
+    int i, next;
+    boolean printed[MAXN];
+    
+    for(i=0; i<MAXN; i++) printed[i] = FALSE;
+
+    for(i=0; i < nv; i++){
+        if(!printed[i]){
+            fprintf(f, "(%d", i + offset);
+            printed[i] = 1;
+            next = groupElement[i];
+            while(!printed[next]){
+                fprintf(f, " %d", next + offset);
+                printed[next] = TRUE;
+                next = groupElement[next];
+            }
+            fprintf(f, ") ");
+        }
+    }
+}
+
 void printQuadrangulationAutomorphismGroup(){    
     int i, j, printed[MAXN], next;
     fprintf(stderr, "automorphism count: %d\n", quadrangulationAutomorphismsCount);
