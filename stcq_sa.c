@@ -103,6 +103,8 @@ boolean printStatistics = FALSE; //2
 boolean writeLpsolveUnsolvedSystems = FALSE; //1
 boolean writeHammingDistanceUnsolvedSystems = FALSE; //2
 
+boolean oneBased = FALSE;
+
 FILE *latexSummaryFile = NULL;
 
 boolean matched[MAXF];
@@ -263,12 +265,12 @@ void printAngleAssignmentLatex(){
     if(latexSummaryFile==NULL) return;
     int i;
     for(i=0; i<nv; i++){
-        fprintf(latexSummaryFile, "%d: ", i);
+        fprintf(latexSummaryFile, "%d: ", i + oneBased);
         EDGE *e, *elast;
     
         e = elast = firstedge[i];
         do {
-            fprintf(latexSummaryFile, "%d ", e->end);
+            fprintf(latexSummaryFile, "%d ", e->end + oneBased);
             if(e->angle==0)
                 fprintf(latexSummaryFile, "($\\alpha$) ");
             else if(e->angle==1)
@@ -2072,6 +2074,7 @@ int main(int argc, char *argv[]){
         {"usedquadrangulations", no_argument, &usedQuadrangulations, TRUE},
         {"unusedquadrangulations", no_argument, &unusedQuadrangulations, TRUE},
         {"latex", required_argument, NULL, 0},
+        {"onebased", no_argument, &oneBased, TRUE},
         {"help", no_argument, NULL, 'h'},
         {"concave", no_argument, NULL, 'c'},
         {"statistics", no_argument, NULL, 's'},
@@ -2093,6 +2096,8 @@ int main(int argc, char *argv[]){
                         break;
                     case 2:
                         latexSummaryFile = fopen(optarg, "w");
+                        break;
+                    case 3:
                         break;
                     default:
                         fprintf(stderr, "Illegal option.\n");
