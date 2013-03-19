@@ -1371,6 +1371,18 @@ boolean checkPartialSystem(int currentFace) {
         }
     }
     duplicateEquationCount = 0;
+    
+    if(degreeThreeVertexTypeCount == 2){
+        if(!degreeThreeTypesCompatibility[type1][type2]){
+            return FALSE;
+        }
+        if(degreeThreeTypesCombinationVertexLowerBound[type1][type2]>nv){
+            return FALSE;
+        }
+        if(degreeThreeTypesCombinationVertexUpperBound[type1][type2]<nv){
+            return FALSE;
+        }
+    }
 
     for (i = 0; i < nv - 1; i++) {
         if (vertexCompletedAfterFace[i]>=currentFace) continue;
@@ -1388,21 +1400,6 @@ boolean checkPartialSystem(int currentFace) {
              * that would be at Hamming distance 1 of this equation is also
              * at Hamming Distance of that earlier equation.
              */
-            
-            //in case of two vertices of degree 3, we perform an extra check
-            if(degree[i]==3 && degree[j]==3){
-                int ti = degreeThreeVertexTypes[i];
-                int tj = degreeThreeVertexTypes[j];
-                if(!degreeThreeTypesCompatibility[ti][tj]){
-                    return FALSE;
-                }
-                if(degreeThreeTypesCombinationVertexLowerBound[ti][tj]>nv){
-                    return FALSE;
-                }
-                if(degreeThreeTypesCombinationVertexUpperBound[ti][tj]<nv){
-                    return FALSE;
-                }
-            }
             
             int diffAlpha = alphaCount[i] - alphaCount[j];
             int diffBeta = betaCount[i] - betaCount[j];
