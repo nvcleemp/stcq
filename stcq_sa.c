@@ -128,6 +128,7 @@ int nf; //the number of faces of the current quadrangulation
 int ne; //the number of edges of the current quadrangulation
 
 int orderedFaces[MAXF];
+int faceRank[MAXF]; //inverse of orderedFaces
 boolean checkVerticesAfterFace[MAXF]; //if true for index i, then the vertex restriction
                                   //should be tested after i faces have been assigned
 boolean vertexCompletedAfterFace[MAXN];
@@ -1443,7 +1444,46 @@ boolean checkPartialSystem(int currentFace) {
     return TRUE;
 }
 
+boolean checkSTCQ4Assignment(int currentFace){
+    //TODO: avoid checking the same face multiple times
+    //TODO: check efficiency of this method!!
+    
+    //check that a c-edge is always next to a c-edge
+    int i;
+    
+    for(i = 0; i < currentFace; i++){
+        EDGE *em = matchingEdges[orderedFaces[i]]; //matching edge
+        int fn;
+        if(angleAssigmentDirection[i]){
+            fn = em->next->rightface; // neighbouring face along c-edge
+        } else {
+            fn = em->inverse->prev->inverse->rightface; // neighbouring face along c-edge
+        }
+        if(faceRank[fn] < currentFace && faceRank[fn] < i){
+            //if angles are fixed for the neighbouring face
+            //second part is to avoid comparing the same pair twice
+
+            EDGE *efn = matchingEdges[fn];
+            //find face next to neighbouring face
+            if(angleAssigmentDirection[faceRank[fn]]){
+                if(orderedFaces[i] != efn->next->rightface){
+                    return FALSE;
+                }
+            } else {
+                if(orderedFaces[i] != efn->inverse->prev->inverse->rightface){
+                    return FALSE;
+                }
+            }
+        }
+    }
+    //no violation of STCQ4 edge assignment found
+    return TRUE;
+}
+
 void assignAnglesForCurrentPerfectMatchingRecursion(int currentFace) {
+    if(generateSTCQ4 && !checkSTCQ4Assignment(currentFace)){
+        return;
+    }
     if (currentFace == nv - 2) {
         handleAngleAssignment();
     } else {
@@ -1843,6 +1883,11 @@ void orderFaces(){
                 e = e->next;
             } while(e!=elast);
         }
+    }
+    
+    //construct faceRank
+    for(i = 0; i < nf; i++){
+        faceRank[orderedFaces[i]] = i;
     }
 }
 
