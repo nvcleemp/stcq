@@ -871,12 +871,15 @@ boolean isCanonicalAngleAssignment(){
                             return FALSE;
                         }
                     }
-                    //compare angle-reversed certificates
-                    for(j = 0; j < pos; j++){
-                        if(aaAnglesCertificate[j] < 3 - aaAnglesAlternateCertificate[j]){
-                            break;
-                        } else if(aaAnglesCertificate[j] > 3 - aaAnglesAlternateCertificate[j]){
-                            return FALSE;
+                    if(!generateSTCQ4){
+                        //when generating STCQ4 we can't interchange alpha <-> delta and beta <-> gamma
+                        //compare angle-reversed certificates
+                        for(j = 0; j < pos; j++){
+                            if(aaAnglesCertificate[j] < 3 - aaAnglesAlternateCertificate[j]){
+                                break;
+                            } else if(aaAnglesCertificate[j] > 3 - aaAnglesAlternateCertificate[j]){
+                                return FALSE;
+                            }
                         }
                     }
                 }
