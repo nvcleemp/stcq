@@ -156,6 +156,8 @@ int aaAutomorphisms[4*MAXE][MAXN]; //there are at most 4e automorphisms
 int aaAutomorphismsCount;
 boolean aaAutomorphismGroupContainsOrientationReversingSymmetry;
 
+boolean generateSTCQ4 = FALSE;
+
 //////////////////////////////////////////////////////////////////////////////
 
 void calculateAutomorphismGroupAngleAssignments();
@@ -2117,6 +2119,8 @@ void help(char *name){
     fprintf(stderr, "Valid options\n=============\n");
     fprintf(stderr, "    -h, --help\n");
     fprintf(stderr, "       Print this help and return.\n");
+    fprintf(stderr, "    -4\n");
+    fprintf(stderr, "       Generate STCQ4 tilings instead of STCQ2. (experimental)\n");
     fprintf(stderr, "    -t, --type type\n");
     fprintf(stderr, "       Specifies the generated type where type is one of\n");
     fprintf(stderr, "           e, edge    edge assignments\n");
@@ -2166,7 +2170,7 @@ int main(int argc, char *argv[]){
     };
     int option_index = 0;
 
-    while ((c = getopt_long(argc, argv, "hcst:o:f:", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "hcst:o:f:4", long_options, &option_index)) != -1) {
         switch (c) {
             case 0:
                 switch (option_index) {
@@ -2196,6 +2200,9 @@ int main(int argc, char *argv[]){
                 break;
             case 's':
                 printStatistics = TRUE;
+                break;
+            case '4':
+                generateSTCQ4 = TRUE;
                 break;
             case 'o':
                 outputFormat = optarg[0];
