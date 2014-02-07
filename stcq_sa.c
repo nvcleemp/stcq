@@ -2118,7 +2118,7 @@ void help(char *name){
     fprintf(stderr, "    -h, --help\n");
     fprintf(stderr, "       Print this help and return.\n");
     fprintf(stderr, "    -t, --type type\n");
-    fprintf(stderr, "       Specifies the generated where type is one of\n");
+    fprintf(stderr, "       Specifies the generated type where type is one of\n");
     fprintf(stderr, "           e, edge    edge assignments\n");
     fprintf(stderr, "           a, angle   angle assignments\n");
     fprintf(stderr, "           t, tiling  spherical tilings (default)\n");
