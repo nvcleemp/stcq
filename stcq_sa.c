@@ -1098,33 +1098,36 @@ void solveSystem() {
     
     if(onlyConvex){
 
-        colno[0] = 1;
-        row[0] = 1;
-        colno[1] = 2;
-        row[1] = -1;
-        colno[2] = 3;
-        row[2] = 0;
-        colno[3] = 4;
-        row[3] = 1;
-        
-        //in case of onlyConvex: upperBoundAngle = 1 - epsilon
-        if (!add_constraintex(lp, 4, row, colno, LE, upperBoundAngle)) {
-            exit(1);
-        }
+        if(!generateSTCQ4){
+            //the following constraints are only applicable for STCQ2
+            colno[0] = 1;
+            row[0] = 1;
+            colno[1] = 2;
+            row[1] = -1;
+            colno[2] = 3;
+            row[2] = 0;
+            colno[3] = 4;
+            row[3] = 1;
+
+            //in case of onlyConvex: upperBoundAngle = 1 - epsilon
+            if (!add_constraintex(lp, 4, row, colno, LE, upperBoundAngle)) {
+                exit(1);
+            }
 
 
-        colno[0] = 1;
-        row[0] = 1;
-        colno[1] = 2;
-        row[1] = 1;
-        colno[2] = 3;
-        row[2] = 0;
-        colno[3] = 4;
-        row[3] = -1;
-        
-        //in case of onlyConvex: upperBoundAngle = 1 - epsilon
-        if (!add_constraintex(lp, 4, row, colno, LE, upperBoundAngle)) {
-            exit(1);
+            colno[0] = 1;
+            row[0] = 1;
+            colno[1] = 2;
+            row[1] = 1;
+            colno[2] = 3;
+            row[2] = 0;
+            colno[3] = 4;
+            row[3] = -1;
+
+            //in case of onlyConvex: upperBoundAngle = 1 - epsilon
+            if (!add_constraintex(lp, 4, row, colno, LE, upperBoundAngle)) {
+                exit(1);
+            }
         }
 
         colno[0] = 1;
