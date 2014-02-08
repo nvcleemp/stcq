@@ -1048,9 +1048,12 @@ void solveSystem() {
          * 
          * Of course we only add each distinct equation once, so we subtract the
          * number of duplicate equations.
-         * There are also 4 inequalities:
+         * For STCQ2 there are also 4 inequalities:
          *     alpha - beta + delta < 1
          *     alpha + beta - delta < 1
+         *     alpha - gamma + delta < 1
+         *    -alpha + gamma + delta < 1
+         * For STCQ4 there are 2 inequalities:
          *     alpha - gamma + delta < 1
          *    -alpha + gamma + delta < 1
          */
