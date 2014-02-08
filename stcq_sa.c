@@ -851,7 +851,29 @@ boolean isCanonicalAngleAssignment(){
                             }
                         }
                         //compare angle-reversed certificates
-                        if(!generateSTCQ4){
+                        if(generateSTCQ4){
+                            //when generating STCQ4 we can interchange alpha <-> gamma
+                            //compare angle-reversed certificates
+                            for(j = 0; j < pos; j++){
+                                if(aaAnglesAlternateCertificate[j]==0){ //alpha
+                                    if(aaAnglesCertificate[j] < 2){
+                                        break;
+                                    } else if(aaAnglesCertificate[j] > 2){
+                                        return FALSE;
+                                    }
+                                } else if(aaAnglesAlternateCertificate[j]==2){ //gamma
+                                    if(aaAnglesCertificate[j] > 0){
+                                        return FALSE;
+                                    }
+                                } else { //beta or delta
+                                    if(aaAnglesCertificate[j] < aaAnglesAlternateCertificate[j]){
+                                        break;
+                                    } else if(aaAnglesCertificate[j] > aaAnglesAlternateCertificate[j]){
+                                        return FALSE;
+                                    }
+                                }
+                            }
+                        } else {
                             //when generating STCQ4 we can't interchange alpha <-> delta and beta <-> gamma
                             //compare angle-reversed certificates
                             for(j = 0; j < pos; j++){
@@ -875,7 +897,29 @@ boolean isCanonicalAngleAssignment(){
                             return FALSE;
                         }
                     }
-                    if(!generateSTCQ4){
+                    if(generateSTCQ4){
+                        //when generating STCQ4 we can interchange alpha <-> gamma
+                        //compare angle-reversed certificates
+                        for(j = 0; j < pos; j++){
+                            if(aaAnglesAlternateCertificate[j]==0){ //alpha
+                                if(aaAnglesCertificate[j] < 2){
+                                    break;
+                                } else if(aaAnglesCertificate[j] > 2){
+                                    return FALSE;
+                                }
+                            } else if(aaAnglesAlternateCertificate[j]==2){ //gamma
+                                if(aaAnglesCertificate[j] > 0){
+                                    return FALSE;
+                                }
+                            } else { //beta or delta
+                                if(aaAnglesCertificate[j] < aaAnglesAlternateCertificate[j]){
+                                    break;
+                                } else if(aaAnglesCertificate[j] > aaAnglesAlternateCertificate[j]){
+                                    return FALSE;
+                                }
+                            }
+                        }
+                    } else {
                         //when generating STCQ4 we can't interchange alpha <-> delta and beta <-> gamma
                         //compare angle-reversed certificates
                         for(j = 0; j < pos; j++){
