@@ -159,6 +159,8 @@ boolean aaAutomorphismGroupContainsOrientationReversingSymmetry;
 
 boolean generateSTCQ4 = FALSE;
 
+boolean relabelInputQuadrangulation = FALSE;
+
 //////////////////////////////////////////////////////////////////////////////
 
 void calculateAutomorphismGroupAngleAssignments();
@@ -1990,6 +1992,47 @@ boolean earlyFilterQuadrangulations(){
     return TRUE;
 }
 
+/* Sets the labelling of the quadrangulation to a BFS-labelling
+ */
+void relabelQuadrangulation(){
+    int newLabelling[MAXN];
+    EDGE *newFirstEdge[MAXN];
+    int queue[MAXN];
+    int i;
+    for(i=0; i<MAXN; i++){
+        newLabelling[i] = MAXN;
+    }
+    EDGE *e, *elast;
+    int head = 1;
+    int tail = 0;
+    int vertexCounter = 1;
+    queue[0] = 0;
+    newFirstEdge[0] = firstedge[0];
+    newLabelling[0] = 0;
+    while(head>tail){
+        int currentVertex = queue[tail++];
+        e = elast = newFirstEdge[currentVertex];
+        do {
+            if(newLabelling[e->end]==MAXN){
+                queue[head++] = e->end;
+                newLabelling[e->end] = vertexCounter++;
+                newFirstEdge[e->end] = e->inverse;
+            }
+            e = e->next;
+        } while (e!=elast);
+    }
+    
+    //apply new labelling
+    for(i = 0; i < nv; i++){
+        e = elast = firstedge[i] = newFirstEdge[i];
+        do {
+            e->start = i;
+            e->end = newLabelling[e->end];
+            e = e->next;
+        } while (e!=elast);
+    }
+}
+
 EDGE *findEdge(int from, int to){
     EDGE *e, *elast;
     
@@ -2247,6 +2290,10 @@ void help(char *name){
     fprintf(stderr, "       Only output quadrangulations that might be used in a STCQ.\n");
     fprintf(stderr, "    --unusedquadrangulations\n");
     fprintf(stderr, "       Only output quadrangulations that cannot be used in a STCQ.\n");
+    fprintf(stderr, "    -r, --relabel\n");
+    fprintf(stderr, "       Relabel the quadrangulations that are used as input. The program requires\n");
+    fprintf(stderr, "       the graphs to have a BFS-labelling compatible with the embedding. If the\n");
+    fprintf(stderr, "       input comes from plantri, then relabelling is not necessary.\n");
 }
 
 void usage(char *name){
@@ -2272,11 +2319,12 @@ int main(int argc, char *argv[]){
         {"statistics", no_argument, NULL, 's'},
         {"type", required_argument, NULL, 't'},
         {"output", required_argument, NULL, 'o'},
-        {"filter", required_argument, NULL, 'f'}
+        {"filter", required_argument, NULL, 'f'},
+        {"relabel", no_argument, NULL, 'r'}
     };
     int option_index = 0;
 
-    while ((c = getopt_long(argc, argv, "hcst:o:f:4", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "hcst:o:f:4r", long_options, &option_index)) != -1) {
         switch (c) {
             case 0:
                 switch (option_index) {
@@ -2339,6 +2387,9 @@ int main(int argc, char *argv[]){
             case 'f':
                 filterOnly = atoi(optarg);
                 break;
+            case 'r':
+                relabelInputQuadrangulation = TRUE;
+                break;
             case '?':
                 usage(name);
                 return EXIT_FAILURE;
@@ -2355,6 +2406,9 @@ int main(int argc, char *argv[]){
     int length;
     while (readPlanarCode(code, &length, stdin)) {
         decodePlanarCode(code);
+        if(relabelInputQuadrangulation){
+            relabelQuadrangulation();
+        }
         numberOfQuadrangulations++;
         if(filterOnly==0 || numberOfQuadrangulations==filterOnly){
             if(!isEarlyFilteringEnabled || earlyFilterQuadrangulations()){
