@@ -1041,7 +1041,11 @@ void solveSystem() {
         exit(1);
     }
     if(onlyConvex){
-        resize_lp(lp, nv + 5 - duplicateEquationCount, get_Ncolumns(lp));
+        if(generateSTCQ4){
+            resize_lp(lp, nv + 3 - duplicateEquationCount, get_Ncolumns(lp));
+        } else {
+            resize_lp(lp, nv + 5 - duplicateEquationCount, get_Ncolumns(lp));
+        }
         /* There nv + 1 equations: one for each vertex plus the extra equation
          * 
          *     alpha + beta + gamma + delta = 2 +4/F.
