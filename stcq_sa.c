@@ -108,6 +108,9 @@ boolean oneBased = FALSE;
 boolean includeGroup = FALSE;
 
 FILE *latexSummaryFile = NULL;
+boolean latexPerSolution = FALSE;
+char *latexBaseName = NULL;
+char latexFileNameBuffer[100];
 
 boolean matched[MAXF];
 int match[MAXF];
@@ -298,6 +301,17 @@ void printAngleAssignment(){
 }
 
 void printAngleAssignmentLatex(){
+    if(latexPerSolution){
+        //open file
+        int result = sprintf(latexFileNameBuffer, latexBaseName, solvableAndCanonical);
+        if(result>0){
+           latexSummaryFile = fopen(latexFileNameBuffer, "w"); 
+        } else {
+            fprintf(stderr, "Error creating filename for LaTeX output -- exiting!\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    
     if(latexSummaryFile==NULL) return;
     int i;
     
@@ -331,6 +345,11 @@ void printAngleAssignmentLatex(){
         fprintf(latexSummaryFile, "\\\\\n");
     }
     fprintf(latexSummaryFile, "\\\\\n");
+    
+    if(latexPerSolution){
+        fclose(latexSummaryFile);
+        latexSummaryFile = NULL;
+    }
 }
 
 void printSphericalTilingByCongruentQuadrangles(lprec *lp){
@@ -1010,7 +1029,7 @@ void handleSolution(lprec *lp) {
             //code
 
         }
-        if(latexSummaryFile!=NULL){
+        if(latexPerSolution || latexSummaryFile!=NULL){
             //output to LaTeX
             printAngleAssignmentLatex();
         }
@@ -2265,7 +2284,7 @@ void help(char *name){
     fprintf(stderr, "congruent convex without writing any output.\n\n");
     fprintf(stderr, "\nThis program can handle graphs up to %d vertices. Recompile if you need larger\n", MAXN);
     fprintf(stderr, "graphs.\n\n");
-    fprintf(stderr, "Valid options\n=============\n");
+    fprintf(stderr, "General options\n=============\n");
     fprintf(stderr, "    -h, --help\n");
     fprintf(stderr, "       Print this help and return.\n");
     fprintf(stderr, "    -4\n");
@@ -2275,25 +2294,37 @@ void help(char *name){
     fprintf(stderr, "           e, edge    edge assignments\n");
     fprintf(stderr, "           a, angle   angle assignments\n");
     fprintf(stderr, "           t, tiling  spherical tilings (default)\n");
-    fprintf(stderr, "    -o, --output format\n");
-    fprintf(stderr, "       Specifies the export format where format is one of\n");
-    fprintf(stderr, "           c, code    code depends on the generated type\n");
-    fprintf(stderr, "           h, human   human-readable output\n");
-    fprintf(stderr, "           n, none    no output: only count (default)\n");
     fprintf(stderr, "    -c, --concave\n");
     fprintf(stderr, "       Also allow concave quadrangles (currently not supported)\n");
     fprintf(stderr, "    -s, --statistics\n");
     fprintf(stderr, "       Print extra statistics\n");
     fprintf(stderr, "    -f, --filter number\n");
     fprintf(stderr, "       Only perform the calculations for the graph with the given number.\n");
-    fprintf(stderr, "    --usedquadrangulations\n");
-    fprintf(stderr, "       Only output quadrangulations that might be used in a STCQ.\n");
-    fprintf(stderr, "    --unusedquadrangulations\n");
-    fprintf(stderr, "       Only output quadrangulations that cannot be used in a STCQ.\n");
     fprintf(stderr, "    -r, --relabel\n");
     fprintf(stderr, "       Relabel the quadrangulations that are used as input. The program requires\n");
     fprintf(stderr, "       the graphs to have a BFS-labelling compatible with the embedding. If the\n");
     fprintf(stderr, "       input comes from plantri, then relabelling is not necessary.\n");
+    fprintf(stderr, "Output options\n=============\n");
+    fprintf(stderr, "    -o, --output format\n");
+    fprintf(stderr, "       Specifies the export format where format is one of\n");
+    fprintf(stderr, "           c, code    code depends on the generated type\n");
+    fprintf(stderr, "           h, human   human-readable output\n");
+    fprintf(stderr, "           n, none    no output: only count (default)\n");
+    fprintf(stderr, "    --usedquadrangulations\n");
+    fprintf(stderr, "       Only output quadrangulations that might be used in a STCQ.\n");
+    fprintf(stderr, "    --unusedquadrangulations\n");
+    fprintf(stderr, "       Only output quadrangulations that cannot be used in a STCQ.\n");
+    fprintf(stderr, "    --latex filename\n");
+    fprintf(stderr, "       Writes the solutions to a file with the given name as a LaTeX fragment.\n");
+    fprintf(stderr, "       Note that this option cancels any previous --latex-per-solution.\n");
+    fprintf(stderr, "    --latex-per-solution basename\n");
+    fprintf(stderr, "       Writes the solutions to files formed with the given base name. Each file\n");
+    fprintf(stderr, "       contains a solution as a LaTeX fragment. basename is given as a format.\n");
+    fprintf(stderr, "       A valid use is, e.g.:\n\n");
+    fprintf(stderr, "            --latex-per-solution result_%%02d.tex\n\n");
+    fprintf(stderr, "       If basename contains no format tag, then all solution will be written to\n");
+    fprintf(stderr, "       the same file, and only the last solution will be present in the file.\n");
+    fprintf(stderr, "       Note that this option cancels any previous --latex.\n");
 }
 
 void usage(char *name){
@@ -2314,6 +2345,7 @@ int main(int argc, char *argv[]){
         {"latex", required_argument, NULL, 0},
         {"onebased", no_argument, &oneBased, TRUE},
         {"group", no_argument, &includeGroup, TRUE},
+        {"latex-per-solution", required_argument, NULL, 0},
         {"help", no_argument, NULL, 'h'},
         {"concave", no_argument, NULL, 'c'},
         {"statistics", no_argument, NULL, 's'},
@@ -2336,9 +2368,17 @@ int main(int argc, char *argv[]){
                         break;
                     case 2:
                         latexSummaryFile = fopen(optarg, "w");
+                        latexPerSolution = FALSE;
                         break;
                     case 3:
                     case 4:
+                        break;
+                    case 5:
+                        latexPerSolution = TRUE;
+                        latexBaseName = optarg;
+                        if(latexSummaryFile != NULL){
+                            fclose(latexSummaryFile);
+                        }
                         break;
                     default:
                         fprintf(stderr, "Illegal option.\n");
