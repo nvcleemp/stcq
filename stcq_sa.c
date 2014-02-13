@@ -2422,6 +2422,10 @@ int main(int argc, char *argv[]){
             }
         }
     }
+    //close any possible open files
+    if(latexSummaryFile != NULL){
+        fclose(latexSummaryFile);
+    }
     printSummary();
 
 }
