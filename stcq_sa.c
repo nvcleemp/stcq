@@ -2284,7 +2284,7 @@ void help(char *name){
     fprintf(stderr, "congruent convex without writing any output.\n\n");
     fprintf(stderr, "\nThis program can handle graphs up to %d vertices. Recompile if you need larger\n", MAXN);
     fprintf(stderr, "graphs.\n\n");
-    fprintf(stderr, "General options\n=============\n");
+    fprintf(stderr, "General options\n===============\n");
     fprintf(stderr, "    -h, --help\n");
     fprintf(stderr, "       Print this help and return.\n");
     fprintf(stderr, "    -4\n");
@@ -2304,7 +2304,7 @@ void help(char *name){
     fprintf(stderr, "       Relabel the quadrangulations that are used as input. The program requires\n");
     fprintf(stderr, "       the graphs to have a BFS-labelling compatible with the embedding. If the\n");
     fprintf(stderr, "       input comes from plantri, then relabelling is not necessary.\n");
-    fprintf(stderr, "Output options\n=============\n");
+    fprintf(stderr, "\nOutput options\n==============\n");
     fprintf(stderr, "    -o, --output format\n");
     fprintf(stderr, "       Specifies the export format where format is one of\n");
     fprintf(stderr, "           c, code    code depends on the generated type\n");
