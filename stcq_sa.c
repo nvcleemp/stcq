@@ -2011,6 +2011,10 @@ boolean cubicQuadSearch(){
  * contains a cubic quadrangle, i.e., a quadrangle with 4 cubic vertices.
  */
 boolean earlyFilterQuadrangulations(){
+    if(!onlyConvex){
+        //we currently have no early filter for the concave case
+        return TRUE;
+    }
     if(nf>6 && cubicQuadSearch()){
         return FALSE;
     }
