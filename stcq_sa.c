@@ -2035,6 +2035,7 @@ void relabelQuadrangulation(){
     queue[0] = 0;
     newFirstEdge[0] = firstedge[0];
     newLabelling[0] = 0;
+    newDegree[0] = degree[0];
     while(head>tail){
         int currentVertex = queue[tail++];
         e = elast = newFirstEdge[currentVertex];
