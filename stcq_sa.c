@@ -2039,9 +2039,13 @@ void relabelQuadrangulation(){
         e = elast = newFirstEdge[currentVertex];
         do {
             if(newLabelling[e->end]==MAXN){
-                queue[head++] = e->end;
-                newLabelling[e->end] = vertexCounter++;
-                newFirstEdge[e->end] = e->inverse;
+                //unlabelled vertex gets label vertexCounter
+                newLabelling[e->end] = vertexCounter;
+                //newly labelled vertex is placed on queue and initial edge is stored
+                queue[head++] = vertexCounter;
+                newFirstEdge[vertexCounter] = e->inverse;
+                //increase counter
+                vertexCounter++;
             }
             e = e->next;
         } while (e!=elast);
