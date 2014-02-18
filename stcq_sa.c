@@ -2021,6 +2021,7 @@ boolean earlyFilterQuadrangulations(){
  */
 void relabelQuadrangulation(){
     int newLabelling[MAXN];
+    int newDegree[MAXN];
     EDGE *newFirstEdge[MAXN];
     int queue[MAXN];
     int i;
@@ -2044,6 +2045,8 @@ void relabelQuadrangulation(){
                 //newly labelled vertex is placed on queue and initial edge is stored
                 queue[head++] = vertexCounter;
                 newFirstEdge[vertexCounter] = e->inverse;
+                //the degree is copied
+                newDegree[vertexCounter] = degree[e->end];
                 //increase counter
                 vertexCounter++;
             }
@@ -2054,6 +2057,7 @@ void relabelQuadrangulation(){
     //apply new labelling
     for(i = 0; i < nv; i++){
         e = elast = firstedge[i] = newFirstEdge[i];
+        degree[i] = newDegree[i];
         do {
             e->start = i;
             e->end = newLabelling[e->end];
