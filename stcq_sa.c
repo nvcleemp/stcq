@@ -164,6 +164,8 @@ boolean generateSTCQ4 = FALSE;
 
 boolean relabelInputQuadrangulation = FALSE;
 
+boolean mirrorImagesAreDistinct = FALSE;
+
 //////////////////////////////////////////////////////////////////////////////
 
 void calculateAutomorphismGroupAngleAssignments();
@@ -745,11 +747,13 @@ void calculateAutomorphismGroupQuadrangulation(){
                         quadrangulationAutomorphismsCount++;
                     }
                 }
-                constructAlternateCertificateOrientationReversing(e);
-                if(memcmp(cagqCertificate, cagqAlternateCertificate, sizeof(int)*pos) == 0) {
-                    //store automorphism
-                    memcpy(quadrangulationAutomorphisms[quadrangulationAutomorphismsCount], cagqAlternateLabelling, sizeof(int)*MAXN);
-                    quadrangulationAutomorphismsCount++;
+                if(!mirrorImagesAreDistinct){
+                    constructAlternateCertificateOrientationReversing(e);
+                    if(memcmp(cagqCertificate, cagqAlternateCertificate, sizeof(int)*pos) == 0) {
+                        //store automorphism
+                        memcpy(quadrangulationAutomorphisms[quadrangulationAutomorphismsCount], cagqAlternateLabelling, sizeof(int)*MAXN);
+                        quadrangulationAutomorphismsCount++;
+                    }
                 }
                 e = e->next;
             } while (e!=elast);
@@ -907,47 +911,49 @@ boolean isCanonicalAngleAssignment(){
                         }
                     }
                 }
-                constructAlternateAngleAssignmentCertificateOrientationReversing(e);
-                //if the vertex certificates are equal, we compare the angle certificates
-                if(memcmp(aaCertificate, aaAlternateCertificate, sizeof(int)*pos) == 0) {
-                    //compare angle certificates
-                    for(j = 0; j < pos; j++){
-                        if(aaAnglesCertificate[j] < aaAnglesAlternateCertificate[j]){
-                            break;
-                        } else if(aaAnglesCertificate[j] > aaAnglesAlternateCertificate[j]){
-                            return FALSE;
-                        }
-                    }
-                    if(generateSTCQ4){
-                        //when generating STCQ4 we can interchange alpha <-> gamma
-                        //compare angle-reversed certificates
+                if(!mirrorImagesAreDistinct){
+                    constructAlternateAngleAssignmentCertificateOrientationReversing(e);
+                    //if the vertex certificates are equal, we compare the angle certificates
+                    if(memcmp(aaCertificate, aaAlternateCertificate, sizeof(int)*pos) == 0) {
+                        //compare angle certificates
                         for(j = 0; j < pos; j++){
-                            if(aaAnglesAlternateCertificate[j]==0){ //alpha
-                                if(aaAnglesCertificate[j] < 2){
-                                    break;
-                                } else if(aaAnglesCertificate[j] > 2){
-                                    return FALSE;
-                                }
-                            } else if(aaAnglesAlternateCertificate[j]==2){ //gamma
-                                if(aaAnglesCertificate[j] > 0){
-                                    return FALSE;
-                                }
-                            } else { //beta or delta
-                                if(aaAnglesCertificate[j] < aaAnglesAlternateCertificate[j]){
-                                    break;
-                                } else if(aaAnglesCertificate[j] > aaAnglesAlternateCertificate[j]){
-                                    return FALSE;
-                                }
+                            if(aaAnglesCertificate[j] < aaAnglesAlternateCertificate[j]){
+                                break;
+                            } else if(aaAnglesCertificate[j] > aaAnglesAlternateCertificate[j]){
+                                return FALSE;
                             }
                         }
-                    } else {
-                        //when generating STCQ4 we can't interchange alpha <-> delta and beta <-> gamma
-                        //compare angle-reversed certificates
-                        for(j = 0; j < pos; j++){
-                            if(aaAnglesCertificate[j] < 3 - aaAnglesAlternateCertificate[j]){
-                                break;
-                            } else if(aaAnglesCertificate[j] > 3 - aaAnglesAlternateCertificate[j]){
-                                return FALSE;
+                        if(generateSTCQ4){
+                            //when generating STCQ4 we can interchange alpha <-> gamma
+                            //compare angle-reversed certificates
+                            for(j = 0; j < pos; j++){
+                                if(aaAnglesAlternateCertificate[j]==0){ //alpha
+                                    if(aaAnglesCertificate[j] < 2){
+                                        break;
+                                    } else if(aaAnglesCertificate[j] > 2){
+                                        return FALSE;
+                                    }
+                                } else if(aaAnglesAlternateCertificate[j]==2){ //gamma
+                                    if(aaAnglesCertificate[j] > 0){
+                                        return FALSE;
+                                    }
+                                } else { //beta or delta
+                                    if(aaAnglesCertificate[j] < aaAnglesAlternateCertificate[j]){
+                                        break;
+                                    } else if(aaAnglesCertificate[j] > aaAnglesAlternateCertificate[j]){
+                                        return FALSE;
+                                    }
+                                }
+                            }
+                        } else {
+                            //when generating STCQ4 we can't interchange alpha <-> delta and beta <-> gamma
+                            //compare angle-reversed certificates
+                            for(j = 0; j < pos; j++){
+                                if(aaAnglesCertificate[j] < 3 - aaAnglesAlternateCertificate[j]){
+                                    break;
+                                } else if(aaAnglesCertificate[j] > 3 - aaAnglesAlternateCertificate[j]){
+                                    return FALSE;
+                                }
                             }
                         }
                     }
@@ -2304,6 +2310,8 @@ void help(char *name){
     fprintf(stderr, "       Relabel the quadrangulations that are used as input. The program requires\n");
     fprintf(stderr, "       the graphs to have a BFS-labelling compatible with the embedding. If the\n");
     fprintf(stderr, "       input comes from plantri, then relabelling is not necessary.\n");
+    fprintf(stderr, "    --mirror\n");
+    fprintf(stderr, "       Makes the program consider mirror images as distinct.\n");
     fprintf(stderr, "\nOutput options\n==============\n");
     fprintf(stderr, "    -o, --output format\n");
     fprintf(stderr, "       Specifies the export format where format is one of\n");
@@ -2346,6 +2354,7 @@ int main(int argc, char *argv[]){
         {"onebased", no_argument, &oneBased, TRUE},
         {"group", no_argument, &includeGroup, TRUE},
         {"latex-per-solution", required_argument, NULL, 0},
+        {"mirror", no_argument, NULL, 0},
         {"help", no_argument, NULL, 'h'},
         {"concave", no_argument, NULL, 'c'},
         {"statistics", no_argument, NULL, 's'},
@@ -2379,6 +2388,9 @@ int main(int argc, char *argv[]){
                         if(latexSummaryFile != NULL){
                             fclose(latexSummaryFile);
                         }
+                        break;
+                    case 6:
+                        mirrorImagesAreDistinct = TRUE;
                         break;
                     default:
                         fprintf(stderr, "Illegal option.\n");
