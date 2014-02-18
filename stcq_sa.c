@@ -1684,7 +1684,7 @@ int generate_perfect_matchings_in_dual() {
     }
     
     if(!generateAllMatchings){
-        if(nv>8){
+        if(nv>8 && onlyConvex){
             markEdgesAtCubicTristar();
         }
     }
