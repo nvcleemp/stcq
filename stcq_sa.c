@@ -2416,6 +2416,7 @@ int main(int argc, char *argv[]){
                 return EXIT_SUCCESS;
             case 'c':
                 onlyConvex = FALSE;
+                boundAngleAssignments = FALSE; //the known bounds only apply to convex stcq
                 break;
             case 's':
                 printStatistics = TRUE;
