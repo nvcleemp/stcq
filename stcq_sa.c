@@ -1366,14 +1366,14 @@ boolean firstCheckOfSystem() {
         /*
          * this equation is already a duplicate itself, so any equation
          * that would be at Hamming distance 1 of this equation is also
-         * at Hamming Distance of that earlier equation.
+         * at Hamming distance 1 of that earlier equation.
          */
         for (j = i + 1; j < nv; j++) {
             if (isDuplicateEquation[j]) continue;
             /*
              * this equation is already a duplicate, so any equation
              * that would be at Hamming distance 1 of this equation is also
-             * at Hamming Distance of that earlier equation.
+             * at Hamming distance 1 of that earlier equation.
              */
             int diffAlpha = alphaCount[i] - alphaCount[j];
             int diffBeta = betaCount[i] - betaCount[j];
