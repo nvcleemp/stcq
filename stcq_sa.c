@@ -166,6 +166,11 @@ boolean relabelInputQuadrangulation = FALSE;
 
 boolean mirrorImagesAreDistinct = FALSE;
 
+int splitting_res = 0;
+int splitting_mod = 1;
+int splitting_level = 10;
+int splitting_count;
+
 //////////////////////////////////////////////////////////////////////////////
 
 void calculateAutomorphismGroupAngleAssignments();
@@ -1603,6 +1608,15 @@ void handlePerfectMatching() {
 }
 
 void matchNextFace(int lastFace, int matchingSize) {
+    //handle splitting
+    if(matchingSize == splitting_level){
+        
+        if (splitting_count-- != 0){
+            return;
+        }
+        splitting_count = splitting_mod - 1;
+    }
+    
     if (matchingSize == (nv - 2) / 2) {
         //Found a perfect matching
         handlePerfectMatching();
@@ -2325,6 +2339,10 @@ void help(char *name){
     fprintf(stderr, "       input comes from plantri, then relabelling is not necessary.\n");
     fprintf(stderr, "    --mirror\n");
     fprintf(stderr, "       Makes the program consider mirror images as distinct.\n");
+    fprintf(stderr, "    -m, --modulo r:n\n");
+    fprintf(stderr, "       Split the generation in multiple parts. The generation is split into n\n");
+    fprintf(stderr, "       parts and only part r is generated. The number n needs to be an integer\n");
+    fprintf(stderr, "       larger than 0 and r should be a positive integer smaller than n.\n");
     fprintf(stderr, "\nOutput options\n==============\n");
     fprintf(stderr, "    -o, --output format\n");
     fprintf(stderr, "       Specifies the export format where format is one of\n");
@@ -2368,17 +2386,20 @@ int main(int argc, char *argv[]){
         {"group", no_argument, &includeGroup, TRUE},
         {"latex-per-solution", required_argument, NULL, 0},
         {"mirror", no_argument, NULL, 0},
+        {"splitlevel", required_argument, NULL, 0},
         {"help", no_argument, NULL, 'h'},
         {"concave", no_argument, NULL, 'c'},
         {"statistics", no_argument, NULL, 's'},
         {"type", required_argument, NULL, 't'},
         {"output", required_argument, NULL, 'o'},
         {"filter", required_argument, NULL, 'f'},
-        {"relabel", no_argument, NULL, 'r'}
+        {"relabel", no_argument, NULL, 'r'},
+        {"modulo", required_argument, NULL, 'm'}
     };
     int option_index = 0;
 
-    while ((c = getopt_long(argc, argv, "hcst:o:f:4r", long_options, &option_index)) != -1) {
+    char *splitting_string;
+    while ((c = getopt_long(argc, argv, "hcst:o:f:4rm:", long_options, &option_index)) != -1) {
         switch (c) {
             case 0:
                 switch (option_index) {
@@ -2404,6 +2425,9 @@ int main(int argc, char *argv[]){
                         break;
                     case 6:
                         mirrorImagesAreDistinct = TRUE;
+                        break;
+                    case 7:
+                        splitting_level =  atoi(optarg);
                         break;
                     default:
                         fprintf(stderr, "Illegal option.\n");
@@ -2456,6 +2480,28 @@ int main(int argc, char *argv[]){
             case 'r':
                 relabelInputQuadrangulation = TRUE;
                 break;
+            case 'm':
+                //modulo
+                splitting_string = optarg;
+                splitting_res = atoi(splitting_string);
+                splitting_string = strchr(splitting_string, ':');
+                if(splitting_string==NULL){
+                    fprintf(stderr, "Illegal format for modulo.\n");
+                    usage(name);
+                    return EXIT_FAILURE;
+                }
+                splitting_mod = atoi(splitting_string+1);
+                if (splitting_res >= splitting_mod) {
+                    fprintf(stderr, "Illegal format for modulo: rest must be smaller than mod.\n");
+                    usage(name);
+                    return EXIT_FAILURE;
+                }
+                if (splitting_res < 0) {
+                    fprintf(stderr, "Illegal format for modulo: rest must be positive.\n");
+                    usage(name);
+                    return EXIT_FAILURE;
+                }
+                break;
             case '?':
                 usage(name);
                 return EXIT_FAILURE;
@@ -2465,13 +2511,34 @@ int main(int argc, char *argv[]){
                 return EXIT_FAILURE;
         }
     }
+    
+    //check splitting
+    if(splitting_mod == 1){
+        splitting_level = 0;
+    }
+    if(splitting_level <= 0 && splitting_res > 0){
+        fprintf(stderr, "Nothing to do for this part.\n");
+        return EXIT_SUCCESS;
+    }
 
     /*=========== read quadrangulations ===========*/
     
     unsigned short code[MAXCODELENGTH];
     int length;
     while (readPlanarCode(code, &length, stdin)) {
+        //reset splitting
+        splitting_count = splitting_res;
+        
+        //decode the graph
         decodePlanarCode(code);
+        
+        //check splitting
+        if(splitting_level > (nv - 2) / 2 && splitting_res > 0){
+            //nothing to do for this part
+            numberOfQuadrangulations++;
+            continue;
+        }
+        
         if(relabelInputQuadrangulation){
             relabelQuadrangulation();
         }
