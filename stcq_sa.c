@@ -2343,6 +2343,12 @@ void help(char *name){
     fprintf(stderr, "       Split the generation in multiple parts. The generation is split into n\n");
     fprintf(stderr, "       parts and only part r is generated. The number n needs to be an integer\n");
     fprintf(stderr, "       larger than 0 and r should be a positive integer smaller than n.\n");
+    fprintf(stderr, "    --splitlevel l\n");
+    fprintf(stderr, "       Sets the level at which point the generation will be split. By default\n");
+    fprintf(stderr, "       this is set to 10. The value l should lie between 1 and half the number\n");
+    fprintf(stderr, "       of faces in the quadrangulation. If l is less than or equal to 0, then\n");
+    fprintf(stderr, "       the splitting will be disabled. If l is more than half the number of\n");
+    fprintf(stderr, "       faces, then all work will be done in part 0.\n");
     fprintf(stderr, "\nOutput options\n==============\n");
     fprintf(stderr, "    -o, --output format\n");
     fprintf(stderr, "       Specifies the export format where format is one of\n");
