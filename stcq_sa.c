@@ -1616,7 +1616,7 @@ void matchNextFace(int lastFace, int matchingSize) {
         }
         splitting_count = splitting_mod - 1;
     }
-    
+        
     if (matchingSize == (nv - 2) / 2) {
         //Found a perfect matching
         handlePerfectMatching();
@@ -2310,7 +2310,7 @@ int readPlanarCode(unsigned short code[], int *length, FILE *file) {
 
 void help(char *name){
     fprintf(stderr, "The program %s calculates spherical tilings by congruent qaudrangles\n", name);
-    fprintf(stderr, "that have any of the input graphs as underlying graph.\n\n", name);
+    fprintf(stderr, "that have any of the input graphs as underlying graph.\n\n");
     fprintf(stderr, "Usage\n=====\n");
     fprintf(stderr, " %s [options]\n\n", name);
     fprintf(stderr, "Without any options, this program will generate spherical tilings by\n");
@@ -2379,7 +2379,7 @@ void usage(char *name){
 }
 
 int main(int argc, char *argv[]){
-
+    
     /*=========== commandline parsing ===========*/
 
     int c;
