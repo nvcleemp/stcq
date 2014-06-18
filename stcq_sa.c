@@ -171,6 +171,11 @@ int splitting_mod = 1;
 int splitting_level = 10;
 int splitting_count;
 
+int splitting_res2 = 0;
+int splitting_mod2 = 1;
+int splitting_level2 = 20;
+int splitting_count2;
+
 //////////////////////////////////////////////////////////////////////////////
 
 void calculateAutomorphismGroupAngleAssignments();
@@ -1616,7 +1621,14 @@ void matchNextFace(int lastFace, int matchingSize) {
         }
         splitting_count = splitting_mod - 1;
     }
+    if(matchingSize == splitting_level2){
         
+        if (splitting_count2-- != 0){
+            return;
+        }
+        splitting_count2 = splitting_mod2 - 1;
+    }
+    
     if (matchingSize == (nv - 2) / 2) {
         //Found a perfect matching
         handlePerfectMatching();
@@ -2399,6 +2411,7 @@ int main(int argc, char *argv[]){
         {"latex-per-solution", required_argument, NULL, 0},
         {"mirror", no_argument, NULL, 0},
         {"splitlevel", required_argument, NULL, 0},
+        {"splitlevel2", required_argument, NULL, 0},
         {"help", no_argument, NULL, 'h'},
         {"concave", no_argument, NULL, 'c'},
         {"statistics", no_argument, NULL, 's'},
@@ -2411,7 +2424,7 @@ int main(int argc, char *argv[]){
     int option_index = 0;
 
     char *splitting_string;
-    while ((c = getopt_long(argc, argv, "hcst:o:f:4rm:", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "hcst:o:f:4rm:M:", long_options, &option_index)) != -1) {
         switch (c) {
             case 0:
                 switch (option_index) {
@@ -2440,6 +2453,9 @@ int main(int argc, char *argv[]){
                         break;
                     case 7:
                         splitting_level =  atoi(optarg);
+                        break;
+                    case 8:
+                        splitting_level2 =  atoi(optarg);
                         break;
                     default:
                         fprintf(stderr, "Illegal option.\n");
@@ -2514,6 +2530,28 @@ int main(int argc, char *argv[]){
                     return EXIT_FAILURE;
                 }
                 break;
+            case 'M':
+                //modulo
+                splitting_string = optarg;
+                splitting_res2 = atoi(splitting_string);
+                splitting_string = strchr(splitting_string, ':');
+                if(splitting_string==NULL){
+                    fprintf(stderr, "Illegal format for modulo.\n");
+                    usage(name);
+                    return EXIT_FAILURE;
+                }
+                splitting_mod2 = atoi(splitting_string+1);
+                if (splitting_res2 >= splitting_mod2) {
+                    fprintf(stderr, "Illegal format for modulo: rest must be smaller than mod.\n");
+                    usage(name);
+                    return EXIT_FAILURE;
+                }
+                if (splitting_res2 < 0) {
+                    fprintf(stderr, "Illegal format for modulo: rest must be positive.\n");
+                    usage(name);
+                    return EXIT_FAILURE;
+                }
+                break;
             case '?':
                 usage(name);
                 return EXIT_FAILURE;
@@ -2527,10 +2565,16 @@ int main(int argc, char *argv[]){
     //check splitting
     if(splitting_mod == 1){
         splitting_level = 0;
+        //disable second splitting level
+        splitting_mod2 = 1;
+        splitting_res2 = 0;
     }
     if(splitting_level <= 0 && splitting_res > 0){
         fprintf(stderr, "Nothing to do for this part.\n");
         return EXIT_SUCCESS;
+    }
+    if(splitting_mod2 == 1){
+        splitting_level2 = 0;
     }
 
     /*=========== read quadrangulations ===========*/
@@ -2540,6 +2584,7 @@ int main(int argc, char *argv[]){
     while (readPlanarCode(code, &length, stdin)) {
         //reset splitting
         splitting_count = splitting_res;
+        splitting_count2 = splitting_res2;
         
         //decode the graph
         decodePlanarCode(code);
