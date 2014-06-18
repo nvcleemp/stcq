@@ -2380,6 +2380,12 @@ void usage(char *name){
 
 int main(int argc, char *argv[]){
     
+    int i;
+    for(i = 0; i < argc; i++){
+        fprintf(stderr, "%s ", argv[i]);
+    }
+    fprintf(stderr, "\n");
+
     /*=========== commandline parsing ===========*/
 
     int c;
