@@ -180,44 +180,44 @@ void calculateAutomorphismGroupAngleAssignments();
 
 boolean degreeThreeTypesCompatibility[10][10] =
 {
-    { TRUE, FALSE, FALSE,  TRUE,  TRUE, FALSE, FALSE,  TRUE, FALSE,  TRUE},
-    {FALSE,  TRUE,  TRUE,  TRUE,  TRUE, FALSE, FALSE, FALSE,  TRUE, FALSE},
-    {FALSE,  TRUE,  TRUE,  TRUE, FALSE,  TRUE, FALSE, FALSE, FALSE,  TRUE},
-    { TRUE,  TRUE,  TRUE,  TRUE, FALSE, FALSE,  TRUE, FALSE, FALSE, FALSE},
-    { TRUE,  TRUE, FALSE, FALSE,  TRUE,  TRUE, FALSE,  TRUE, FALSE, FALSE},
-    {FALSE, FALSE,  TRUE, FALSE,  TRUE,  TRUE, FALSE, FALSE,  TRUE,  TRUE},
-    {FALSE, FALSE, FALSE,  TRUE, FALSE, FALSE,  TRUE,  TRUE,  TRUE,  TRUE},
-    { TRUE, FALSE, FALSE, FALSE,  TRUE, FALSE,  TRUE,  TRUE,  TRUE, FALSE},
-    {FALSE,  TRUE, FALSE, FALSE, FALSE,  TRUE,  TRUE,  TRUE,  TRUE, FALSE},
-    { TRUE, FALSE,  TRUE, FALSE, FALSE,  TRUE,  TRUE, FALSE, FALSE,  TRUE}
+    { TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE, FALSE, FALSE,  TRUE},
+    { TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE, FALSE},
+    { TRUE,  TRUE,  TRUE,  TRUE,  TRUE, FALSE,  TRUE, FALSE,  TRUE,  TRUE},
+    { TRUE,  TRUE,  TRUE,  TRUE,  TRUE, FALSE,  TRUE,  TRUE,  TRUE,  TRUE},
+    { TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE, FALSE,  TRUE,  TRUE,  TRUE},
+    { TRUE,  TRUE, FALSE, FALSE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE},
+    { TRUE,  TRUE,  TRUE,  TRUE, FALSE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE},
+    {FALSE,  TRUE, FALSE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE},
+    {FALSE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE},
+    { TRUE, FALSE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE}
 };
 
 int degreeThreeTypesCombinationVertexLowerBound[10][10] =
 {
-    {   0, INFI, INFI,    0,    0, INFI, INFI,    8, INFI,   10},
-    {INFI,    0,   10,    0,    0, INFI, INFI, INFI,    0, INFI},
-    {INFI,   10,    0,   10, INFI,    8, INFI, INFI, INFI,    0},
-    {   0,    0,   10,    0, INFI, INFI,    0, INFI, INFI, INFI},
-    {   0,    0, INFI, INFI,    0,   10, INFI,    0, INFI, INFI},
-    {INFI, INFI,   10, INFI,   10,    0, INFI, INFI,    0,    0},
-    {INFI, INFI, INFI,    0, INFI, INFI,    0,   10,    0,    0},
-    {   8, INFI, INFI, INFI,    0, INFI,   10,    0,   10, INFI},
-    {INFI,    0, INFI, INFI, INFI,    0,    0,   10,    0, INFI},
-    {  10, INFI,    0, INFI, INFI,    0,    0, INFI, INFI,    0}
+    {   0,    0,    0,    0,    0,    0,    0, INFI, INFI,    0},
+    {   0,    0,    0,    0,    0,    0,    0,    0,    0, INFI},
+    {   0,    0,    0,    0,    0, INFI,    0, INFI,    0,    0},
+    {   0,    0,    0,    0,    0, INFI,    0,    0,    0,    0},
+    {   0,    0,    0,    0,    0,    0, INFI,    0,    0,    0},
+    {   0,    0, INFI, INFI,    0,    0,    0,    0,    0,    0},
+    {   0,    0,    0,    0, INFI,    0,    0,    0,    0,    0},
+    {INFI,    0, INFI,    0,    0,    0,    0,    0,    0,    0},
+    {INFI,    0,    0,    0,    0,    0,    0,    0,    0,    0},
+    {   0, INFI,    0,    0,    0,    0,    0,    0,    0,    0}
 };
 
 int degreeThreeTypesCombinationVertexUpperBound[10][10] =
 {
-    {INFI,    0,    0, INFI, INFI,    0,    0,    8,    0, INFI},
-    {   0, INFI, INFI, INFI, INFI,    0,    0,    0, INFI,    0},
-    {   0, INFI, INFI, INFI,    0,    8,    0,    0,    0, INFI},
-    {INFI, INFI, INFI, INFI,    0,    0, INFI,    0,    0,    0},
-    {INFI, INFI,    0,    0, INFI, INFI,    0, INFI,    0,    0},
-    {   0,    0,    8,    0, INFI, INFI,    0,    0, INFI, INFI},
-    {   0,    0,    0, INFI,    0,    0, INFI, INFI, INFI, INFI},
-    {   8,    0,    0,    0, INFI,    0, INFI, INFI, INFI,    0},
-    {   0, INFI,    0,    0,    0, INFI, INFI, INFI, INFI,    0},
-    {INFI,    0, INFI,    0,    0, INFI, INFI,    0,    0, INFI}
+    {INFI, INFI, INFI, INFI, INFI, INFI, INFI,    0,    0, INFI},
+    {INFI, INFI, INFI, INFI, INFI, INFI, INFI, INFI, INFI,    0},
+    {INFI, INFI, INFI, INFI, INFI,    0, INFI,    0, INFI, INFI},
+    {INFI, INFI, INFI, INFI, INFI,    0, INFI, INFI, INFI, INFI},
+    {INFI, INFI, INFI, INFI, INFI, INFI,    0, INFI, INFI, INFI},
+    {INFI, INFI,    0,    0, INFI, INFI, INFI, INFI, INFI, INFI},
+    {INFI, INFI, INFI, INFI,    0, INFI, INFI, INFI, INFI, INFI},
+    {   0, INFI,    0, INFI, INFI, INFI, INFI, INFI, INFI, INFI},
+    {   0, INFI, INFI, INFI, INFI, INFI, INFI, INFI, INFI, INFI},
+    {INFI,    0, INFI, INFI, INFI, INFI, INFI, INFI, INFI, INFI}
 };
 
 int getDegreeThreeVertexType(int v){
