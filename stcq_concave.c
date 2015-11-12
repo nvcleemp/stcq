@@ -82,8 +82,6 @@ boolean printDuplicateEquations = FALSE;
 
 unsigned long long int filterOnly = 0;
 
-boolean onlyConvex = TRUE;
-
 char outputFormat = 'n'; //defaults to no output
 
 char generatedType = 't'; //defaults to spherical tilings
@@ -1023,30 +1021,14 @@ void solveSystem() {
     if (lp == NULL) {
         exit(1);
     }
-    if(onlyConvex){
-        resize_lp(lp, nv + 5 - duplicateEquationCount, get_Ncolumns(lp));
-        /* There nv + 1 equations: one for each vertex plus the extra equation
-         * 
-         *     alpha + beta + gamma + delta = 2 +4/F.
-         * 
-         * Of course we only add each distinct equation once, so we subtract the
-         * number of duplicate equations.
-         * For STCQ2 there are also 4 inequalities:
-         *     alpha - beta + delta < 1
-         *     alpha + beta - delta < 1
-         *     alpha - gamma + delta < 1
-         *    -alpha + gamma + delta < 1
-         */
-    } else {
-        resize_lp(lp, nv + 1 - duplicateEquationCount, get_Ncolumns(lp));
-        /* There nv + 1 equations: one for each vertex plus the extra equation
-         * 
-         *     alpha + beta + gamma + delta = 2 +4/F.
-         * 
-         * Of course we only add each distinct equation once, so we subtract the
-         * number of duplicate equations.
-         */
-    }
+    resize_lp(lp, nv + 1 - duplicateEquationCount, get_Ncolumns(lp));
+    /* There nv + 1 equations: one for each vertex plus the extra equation
+     * 
+     *     alpha + beta + gamma + delta = 2 +4/F.
+     * 
+     * Of course we only add each distinct equation once, so we subtract the
+     * number of duplicate equations.
+     */
 
     //name the columns
     set_col_name(lp, 1, "alpha");
@@ -1057,9 +1039,6 @@ void solveSystem() {
     REAL epsilon = 0.000001;
     REAL lowerBoundAngle = 0 + epsilon;
     REAL upperBoundAngle = 2 - epsilon;
-    if(onlyConvex){
-        upperBoundAngle = 1 - epsilon;
-    }
     set_bounds(lp, 1, lowerBoundAngle, upperBoundAngle);
     set_bounds(lp, 2, lowerBoundAngle, upperBoundAngle);
     set_bounds(lp, 3, lowerBoundAngle, upperBoundAngle);
@@ -1121,37 +1100,6 @@ void solveSystem() {
 
     if (!add_constraintex(lp, 4, row, colno, EQ, 2 + 4.0 / (nv - 2))) {
         exit(1);
-    }
-    
-    if(onlyConvex){
-
-        colno[0] = 1;
-        row[0] = 1;
-        colno[1] = 2;
-        row[1] = 0;
-        colno[2] = 3;
-        row[2] = -1;
-        colno[3] = 4;
-        row[3] = 1;
-        
-        //in case of onlyConvex: upperBoundAngle = 1 - epsilon
-        if (!add_constraintex(lp, 4, row, colno, LE, upperBoundAngle)) {
-            exit(1);
-        }
-
-        colno[0] = 1;
-        row[0] = -1;
-        colno[1] = 2;
-        row[1] = 0;
-        colno[2] = 3;
-        row[2] = 1;
-        colno[3] = 4;
-        row[3] = 1;
-        
-        //in case of onlyConvex: upperBoundAngle = 1 - epsilon
-        if (!add_constraintex(lp, 4, row, colno, LE, upperBoundAngle)) {
-            exit(1);
-        }
     }
 
     set_add_rowmode(lp, FALSE); //stop adding rows
@@ -1576,12 +1524,6 @@ int generate_perfect_matchings_in_dual() {
         fprintf(stderr, "Something went horribly wrong. Maybe some wrong parameter?\nnf: %d, nv: %d\n", nf, nv);
         exit(1);
     }
-    
-    if(!generateAllMatchings){
-        if(nv>8 && onlyConvex){
-            markEdgesAtCubicTristar();
-        }
-    }
 
     for (i = 0; i < nv - 2; i++) {
         matched[i] = FALSE;
@@ -1905,13 +1847,7 @@ boolean cubicQuadSearch(){
  * contains a cubic quadrangle, i.e., a quadrangle with 4 cubic vertices.
  */
 boolean earlyFilterQuadrangulations(){
-    if(!onlyConvex){
-        //we currently have no early filter for the concave case
-        return TRUE;
-    }
-    if(nf>6 && cubicQuadSearch()){
-        return FALSE;
-    }
+    //we currently have no early filter for the concave case
     return TRUE;
 }
 
@@ -2205,8 +2141,6 @@ void help(char *name){
     fprintf(stderr, "           e, edge    edge assignments\n");
     fprintf(stderr, "           a, angle   angle assignments\n");
     fprintf(stderr, "           t, tiling  spherical tilings (default)\n");
-    fprintf(stderr, "    -c, --concave\n");
-    fprintf(stderr, "       Also allow concave quadrangles (currently not supported)\n");
     fprintf(stderr, "    -s, --statistics\n");
     fprintf(stderr, "       Print extra statistics\n");
     fprintf(stderr, "    -f, --filter number\n");
@@ -2279,7 +2213,6 @@ int main(int argc, char *argv[]){
         {"splitlevel", required_argument, NULL, 0},
         {"splitlevel2", required_argument, NULL, 0},
         {"help", no_argument, NULL, 'h'},
-        {"concave", no_argument, NULL, 'c'},
         {"statistics", no_argument, NULL, 's'},
         {"type", required_argument, NULL, 't'},
         {"output", required_argument, NULL, 'o'},
@@ -2290,7 +2223,7 @@ int main(int argc, char *argv[]){
     int option_index = 0;
 
     char *splitting_string;
-    while ((c = getopt_long(argc, argv, "hcst:o:f:4rm:M:", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "hst:o:f:4rm:M:", long_options, &option_index)) != -1) {
         switch (c) {
             case 0:
                 switch (option_index) {
@@ -2332,10 +2265,6 @@ int main(int argc, char *argv[]){
             case 'h':
                 help(name);
                 return EXIT_SUCCESS;
-            case 'c':
-                onlyConvex = FALSE;
-                boundAngleAssignments = FALSE; //the known bounds only apply to convex stcq
-                break;
             case 's':
                 printStatistics = TRUE;
                 break;
