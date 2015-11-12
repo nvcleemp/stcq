@@ -160,8 +160,6 @@ int aaAutomorphisms[4*MAXE][MAXN]; //there are at most 4e automorphisms
 int aaAutomorphismsCount;
 boolean aaAutomorphismGroupContainsOrientationReversingSymmetry;
 
-boolean generateSTCQ4 = FALSE;
-
 boolean relabelInputQuadrangulation = FALSE;
 
 boolean mirrorImagesAreDistinct = FALSE;
@@ -886,37 +884,11 @@ boolean isCanonicalAngleAssignment(){
                             }
                         }
                         //compare angle-reversed certificates
-                        if(generateSTCQ4){
-                            //when generating STCQ4 we can interchange alpha <-> gamma
-                            //compare angle-reversed certificates
-                            for(j = 0; j < pos; j++){
-                                if(aaAnglesAlternateCertificate[j]==0){ //alpha
-                                    if(aaAnglesCertificate[j] < 2){
-                                        break;
-                                    } else if(aaAnglesCertificate[j] > 2){
-                                        return FALSE;
-                                    }
-                                } else if(aaAnglesAlternateCertificate[j]==2){ //gamma
-                                    if(aaAnglesCertificate[j] > 0){
-                                        return FALSE;
-                                    }
-                                } else { //beta or delta
-                                    if(aaAnglesCertificate[j] < aaAnglesAlternateCertificate[j]){
-                                        break;
-                                    } else if(aaAnglesCertificate[j] > aaAnglesAlternateCertificate[j]){
-                                        return FALSE;
-                                    }
-                                }
-                            }
-                        } else {
-                            //when generating STCQ4 we can't interchange alpha <-> delta and beta <-> gamma
-                            //compare angle-reversed certificates
-                            for(j = 0; j < pos; j++){
-                                if(aaAnglesCertificate[j] < 3 - aaAnglesAlternateCertificate[j]){
-                                    break;
-                                } else if(aaAnglesCertificate[j] > 3 - aaAnglesAlternateCertificate[j]){
-                                    return FALSE;
-                                }
+                        for(j = 0; j < pos; j++){
+                            if(aaAnglesCertificate[j] < 3 - aaAnglesAlternateCertificate[j]){
+                                break;
+                            } else if(aaAnglesCertificate[j] > 3 - aaAnglesAlternateCertificate[j]){
+                                return FALSE;
                             }
                         }
                     }
@@ -933,37 +905,11 @@ boolean isCanonicalAngleAssignment(){
                                 return FALSE;
                             }
                         }
-                        if(generateSTCQ4){
-                            //when generating STCQ4 we can interchange alpha <-> gamma
-                            //compare angle-reversed certificates
-                            for(j = 0; j < pos; j++){
-                                if(aaAnglesAlternateCertificate[j]==0){ //alpha
-                                    if(aaAnglesCertificate[j] < 2){
-                                        break;
-                                    } else if(aaAnglesCertificate[j] > 2){
-                                        return FALSE;
-                                    }
-                                } else if(aaAnglesAlternateCertificate[j]==2){ //gamma
-                                    if(aaAnglesCertificate[j] > 0){
-                                        return FALSE;
-                                    }
-                                } else { //beta or delta
-                                    if(aaAnglesCertificate[j] < aaAnglesAlternateCertificate[j]){
-                                        break;
-                                    } else if(aaAnglesCertificate[j] > aaAnglesAlternateCertificate[j]){
-                                        return FALSE;
-                                    }
-                                }
-                            }
-                        } else {
-                            //when generating STCQ4 we can't interchange alpha <-> delta and beta <-> gamma
-                            //compare angle-reversed certificates
-                            for(j = 0; j < pos; j++){
-                                if(aaAnglesCertificate[j] < 3 - aaAnglesAlternateCertificate[j]){
-                                    break;
-                                } else if(aaAnglesCertificate[j] > 3 - aaAnglesAlternateCertificate[j]){
-                                    return FALSE;
-                                }
+                        for(j = 0; j < pos; j++){
+                            if(aaAnglesCertificate[j] < 3 - aaAnglesAlternateCertificate[j]){
+                                break;
+                            } else if(aaAnglesCertificate[j] > 3 - aaAnglesAlternateCertificate[j]){
+                                return FALSE;
                             }
                         }
                     }
@@ -1078,11 +1024,7 @@ void solveSystem() {
         exit(1);
     }
     if(onlyConvex){
-        if(generateSTCQ4){
-            resize_lp(lp, nv + 3 - duplicateEquationCount, get_Ncolumns(lp));
-        } else {
-            resize_lp(lp, nv + 5 - duplicateEquationCount, get_Ncolumns(lp));
-        }
+        resize_lp(lp, nv + 5 - duplicateEquationCount, get_Ncolumns(lp));
         /* There nv + 1 equations: one for each vertex plus the extra equation
          * 
          *     alpha + beta + gamma + delta = 2 +4/F.
@@ -1092,9 +1034,6 @@ void solveSystem() {
          * For STCQ2 there are also 4 inequalities:
          *     alpha - beta + delta < 1
          *     alpha + beta - delta < 1
-         *     alpha - gamma + delta < 1
-         *    -alpha + gamma + delta < 1
-         * For STCQ4 there are 2 inequalities:
          *     alpha - gamma + delta < 1
          *    -alpha + gamma + delta < 1
          */
@@ -1185,38 +1124,6 @@ void solveSystem() {
     }
     
     if(onlyConvex){
-
-        if(!generateSTCQ4){
-            //the following constraints are only applicable for STCQ2
-            colno[0] = 1;
-            row[0] = 1;
-            colno[1] = 2;
-            row[1] = -1;
-            colno[2] = 3;
-            row[2] = 0;
-            colno[3] = 4;
-            row[3] = 1;
-
-            //in case of onlyConvex: upperBoundAngle = 1 - epsilon
-            if (!add_constraintex(lp, 4, row, colno, LE, upperBoundAngle)) {
-                exit(1);
-            }
-
-
-            colno[0] = 1;
-            row[0] = 1;
-            colno[1] = 2;
-            row[1] = 1;
-            colno[2] = 3;
-            row[2] = 0;
-            colno[3] = 4;
-            row[3] = -1;
-
-            //in case of onlyConvex: upperBoundAngle = 1 - epsilon
-            if (!add_constraintex(lp, 4, row, colno, LE, upperBoundAngle)) {
-                exit(1);
-            }
-        }
 
         colno[0] = 1;
         row[0] = 1;
@@ -1542,46 +1449,7 @@ boolean checkPartialSystem(int currentFace) {
     return TRUE;
 }
 
-boolean checkSTCQ4Assignment(int currentFace){
-    //TODO: avoid checking the same face multiple times
-    //TODO: check efficiency of this method!!
-    
-    //check that a c-edge is always next to a c-edge
-    int i;
-    
-    for(i = 0; i < currentFace; i++){
-        EDGE *em = matchingEdges[orderedFaces[i]]; //matching edge
-        int fn;
-        if(angleAssigmentDirection[i]){
-            fn = em->next->rightface; // neighbouring face along c-edge
-        } else {
-            fn = em->inverse->prev->inverse->rightface; // neighbouring face along c-edge
-        }
-        if(faceRank[fn] < currentFace && faceRank[fn] < i){
-            //if angles are fixed for the neighbouring face
-            //second part is to avoid comparing the same pair twice
-
-            EDGE *efn = matchingEdges[fn];
-            //find face next to neighbouring face
-            if(angleAssigmentDirection[faceRank[fn]]){
-                if(orderedFaces[i] != efn->next->rightface){
-                    return FALSE;
-                }
-            } else {
-                if(orderedFaces[i] != efn->inverse->prev->inverse->rightface){
-                    return FALSE;
-                }
-            }
-        }
-    }
-    //no violation of STCQ4 edge assignment found
-    return TRUE;
-}
-
 void assignAnglesForCurrentPerfectMatchingRecursion(int currentFace) {
-    if(generateSTCQ4 && !checkSTCQ4Assignment(currentFace)){
-        return;
-    }
     if (currentFace == nv - 2) {
         handleAngleAssignment();
     } else {
@@ -2332,8 +2200,6 @@ void help(char *name){
     fprintf(stderr, "General options\n===============\n");
     fprintf(stderr, "    -h, --help\n");
     fprintf(stderr, "       Print this help and return.\n");
-    fprintf(stderr, "    -4\n");
-    fprintf(stderr, "       Generate STCQ4 tilings instead of STCQ2. (experimental)\n");
     fprintf(stderr, "    -t, --type type\n");
     fprintf(stderr, "       Specifies the generated type where type is one of\n");
     fprintf(stderr, "           e, edge    edge assignments\n");
@@ -2472,9 +2338,6 @@ int main(int argc, char *argv[]){
                 break;
             case 's':
                 printStatistics = TRUE;
-                break;
-            case '4':
-                generateSTCQ4 = TRUE;
                 break;
             case 'o':
                 outputFormat = optarg[0];
