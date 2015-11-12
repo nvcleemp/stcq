@@ -1,9 +1,9 @@
-all: plantri stcq
+all: plantri stcq_concave
 
 clean:
 
 plantri: plantri.c
 	cc -o plantri -O4 plantri.c
 
-stcq: stcq_sa.c
-	cc -o stcq -O4 stcq_sa.c liblpsolve55.a -lm -ldl
+stcq_concave: stcq_concave.c
+	cc -o stcq_concave -O4 stcq_concave.c liblpsolve55.a -lm -ldl
