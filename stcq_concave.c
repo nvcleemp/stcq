@@ -1262,14 +1262,6 @@ boolean firstCheckOfSystem() {
                     //alpha==gamma
                     return FALSE;
                 }
-                if(diffAlpha==-diffDelta && diffGamma==0 && diffBeta==0){
-                    //alpha==delta
-                    return FALSE;
-                }
-                if(diffBeta==-diffGamma && diffAlpha==0 && diffDelta==0){
-                    //beta==gamma
-                    return FALSE;
-                }
                 if(diffBeta==-diffDelta && diffGamma==0 && diffAlpha==0){
                     //beta==delta
                     return FALSE;
@@ -1377,14 +1369,6 @@ boolean checkPartialSystem(int currentFace) {
                 }
                 if(diffAlpha==-diffGamma && diffBeta==0 && diffDelta==0){
                     //alpha==gamma
-                    return FALSE;
-                }
-                if(diffAlpha==-diffDelta && diffGamma==0 && diffBeta==0){
-                    //alpha==delta
-                    return FALSE;
-                }
-                if(diffBeta==-diffGamma && diffAlpha==0 && diffDelta==0){
-                    //beta==gamma
                     return FALSE;
                 }
                 if(diffBeta==-diffDelta && diffGamma==0 && diffAlpha==0){
