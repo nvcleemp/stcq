@@ -192,34 +192,6 @@ boolean degreeThreeTypesCompatibility[10][10] =
     { TRUE, FALSE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE}
 };
 
-int degreeThreeTypesCombinationVertexLowerBound[10][10] =
-{
-    {   0,    0,    0,    0,    0,    0,    0, INFI, INFI,    0},
-    {   0,    0,    0,    0,    0,    0,    0,    0,    0, INFI},
-    {   0,    0,    0,    0,    0, INFI,    0, INFI,    0,    0},
-    {   0,    0,    0,    0,    0, INFI,    0,    0,    0,    0},
-    {   0,    0,    0,    0,    0,    0, INFI,    0,    0,    0},
-    {   0,    0, INFI, INFI,    0,    0,    0,    0,    0,    0},
-    {   0,    0,    0,    0, INFI,    0,    0,    0,    0,    0},
-    {INFI,    0, INFI,    0,    0,    0,    0,    0,    0,    0},
-    {INFI,    0,    0,    0,    0,    0,    0,    0,    0,    0},
-    {   0, INFI,    0,    0,    0,    0,    0,    0,    0,    0}
-};
-
-int degreeThreeTypesCombinationVertexUpperBound[10][10] =
-{
-    {INFI, INFI, INFI, INFI, INFI, INFI, INFI,    0,    0, INFI},
-    {INFI, INFI, INFI, INFI, INFI, INFI, INFI, INFI, INFI,    0},
-    {INFI, INFI, INFI, INFI, INFI,    0, INFI,    0, INFI, INFI},
-    {INFI, INFI, INFI, INFI, INFI,    0, INFI, INFI, INFI, INFI},
-    {INFI, INFI, INFI, INFI, INFI, INFI,    0, INFI, INFI, INFI},
-    {INFI, INFI,    0,    0, INFI, INFI, INFI, INFI, INFI, INFI},
-    {INFI, INFI, INFI, INFI,    0, INFI, INFI, INFI, INFI, INFI},
-    {   0, INFI,    0, INFI, INFI, INFI, INFI, INFI, INFI, INFI},
-    {   0, INFI, INFI, INFI, INFI, INFI, INFI, INFI, INFI, INFI},
-    {INFI,    0, INFI, INFI, INFI, INFI, INFI, INFI, INFI, INFI}
-};
-
 int getDegreeThreeVertexType(int v){
     int a, b, c, d;
     a = alphaCount[v];
@@ -1322,12 +1294,6 @@ boolean checkPartialSystem(int currentFace) {
     
     if(degreeThreeVertexTypeCount == 2){
         if(!degreeThreeTypesCompatibility[type1][type2]){
-            return FALSE;
-        }
-        if(degreeThreeTypesCombinationVertexLowerBound[type1][type2]>nv){
-            return FALSE;
-        }
-        if(degreeThreeTypesCombinationVertexUpperBound[type1][type2]<nv){
             return FALSE;
         }
     }
