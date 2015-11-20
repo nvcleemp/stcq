@@ -1468,35 +1468,6 @@ void matchNextFace(int lastFace, int matchingSize) {
     matched[nextFace] = FALSE;
 }
 
-void markEdgesAtCubicTristar(){
-    int i;
-    for(i=0; i<nv; i++){
-        if(degree[i]==3){
-            EDGE *e, *elast;
-
-            int isTristar = TRUE;
-
-            e = elast = firstedge[i];
-            do {
-                if(degree[e->end]!=3){
-                    isTristar = FALSE;
-                }
-                e = e->next;
-            } while (e!=elast);
-
-            if(isTristar){
-                e = elast = firstedge[i];
-                do {
-                    e->allowedInFaceMatching = FALSE;
-                    e->inverse->prev->inverse->next->allowedInFaceMatching = FALSE;
-                    e->inverse->next->inverse->prev->allowedInFaceMatching = FALSE;
-                    e = e->next;
-                } while (e!=elast);
-            }
-        }
-    }
-}
-
 int generate_perfect_matchings_in_dual() {
     int i;
 
@@ -1800,30 +1771,6 @@ void orderFaces(){
 }
 
 //////////////////////////////////////////////////////////////////////////////
-
-/*
- * This method returns TRUE if the current quadrangulation contains a cubic
- * quadrangle, i.e., a quadrangle with 4 cubic vertices, and FALSE otherwise.
- */
-boolean cubicQuadSearch(){
-    int i;
-    for(i=0; i<nf; i++){
-        EDGE *e, *elast;
-        
-        boolean isCubicQuad = TRUE;
-        
-        e = elast = facestart[i];
-        do {
-            if(degree[e->start]!=3){
-                isCubicQuad = FALSE;
-            }
-            e = e->inverse->prev;
-        } while (e!=elast);
-        
-        if(isCubicQuad) return TRUE;
-    }
-    return FALSE;
-}
 
 /*
  * Method that returns FALSE if can be decided that this quadrangulation does not
